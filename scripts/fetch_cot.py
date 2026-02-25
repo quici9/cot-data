@@ -131,7 +131,7 @@ def validate_latest_week(records_by_pair):
     latest_dates = {}
     for pair, records in records_by_pair.items():
         if records:
-            latest_dates[pair] = records[0]["report_date_as_yyyy_mm_dd"]
+            latest_dates[pair] = records[0]["date"]
     
     if not latest_dates:
         raise ValueError("Không có data nào được fetch")
