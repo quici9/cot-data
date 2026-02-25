@@ -24,13 +24,13 @@ LOOKBACK_WEEKS = 54
 # Map tên contract CFTC → symbol chuẩn của tool
 CONTRACT_MAP = {
     "EURO FX - CHICAGO MERCANTILE EXCHANGE":           "EUR",
-    "BRITISH POUND STERLING - CHICAGO MERCANTILE EXCHANGE": "GBP",
+    "BRITISH POUND - CHICAGO MERCANTILE EXCHANGE":     "GBP",
     "JAPANESE YEN - CHICAGO MERCANTILE EXCHANGE":      "JPY",
     "AUSTRALIAN DOLLAR - CHICAGO MERCANTILE EXCHANGE": "AUD",
     "CANADIAN DOLLAR - CHICAGO MERCANTILE EXCHANGE":   "CAD",
     "SWISS FRANC - CHICAGO MERCANTILE EXCHANGE":       "CHF",
-    "NEW ZEALAND DOLLAR - CHICAGO MERCANTILE EXCHANGE":"NZD",
-    "U.S. DOLLAR INDEX - ICE FUTURES U.S.":            "USD",
+    "NZ DOLLAR - CHICAGO MERCANTILE EXCHANGE":         "NZD",
+    "USD INDEX - ICE FUTURES U.S.":                    "USD",
 }
 
 # Output paths
@@ -181,6 +181,15 @@ def process(raw_data):
     # Sort DESC
     for sym in grouped:
         grouped[sym].sort(key=lambda x: x["date"], reverse=True)
+    
+    # Diagnostic: log record count per pair
+    for sym in sorted(grouped.keys()):
+        count = len(grouped[sym])
+        if count == 0:
+            log(f"WARNING: {sym} — 0 records (contract name mismatch?)")
+        else:
+            log(f"  {sym}: {count} records, latest={grouped[sym][0]['date'][:10]}")
+
     
     # Validate
     all_valid, latest_date = validate_latest_week(grouped)
