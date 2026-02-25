@@ -1,0 +1,54 @@
+name: Fetch COT Data
+
+on:
+  # Chạy tự động mỗi thứ Bảy 01:00 UTC = 08:00 GMT+7
+  schedule:
+    - cron: '0 1 * * 6'
+  
+  # Cho phép chạy thủ công từ GitHub UI (dùng khi test hoặc CFTC delay)
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Ghi đè history nếu đã tồn tại'
+        required: false
+        default: 'false'
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write   # Cần để commit file JSON vào repo
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run fetch script
+        run: python scripts/fetch_cot.py
+
+      - name: Check có file thay đổi không
+        id: check_changes
+        run: |
+          git diff --quiet data/ && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit và push data
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name  "cot-bot"
+          git config user.email "cot-bot@github.com"
+          git add data/
+          git commit -m "chore: update COT data $(date -u +'%Y-%m-%d')"
+          git push
+
+      - name: Không có data mới
+        if: steps.check_changes.outputs.changed == 'false'
+        run: echo "Không có thay đổi — CFTC delay hoặc data đã có"

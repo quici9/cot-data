@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COT Index Calculator — ICT Trader</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --border: #2a2f38;
+    --border-bright: #3a4150;
+    --text: #e8eaf0;
+    --muted: #8b94a5;
+    --accent: #c8a96e;
+    --red: #e05c5c;
+    --green: #5cc8a0;
+    --yellow: #e0c05c;
+    --neutral: #8899bb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(200,169,110,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(92,200,160,0.03) 0%, transparent 60%);
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  header { margin-bottom: 40px; border-bottom: 1px solid var(--border-bright); padding-bottom: 24px; }
+  .tag { font-size: 12px; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 5vw, 40px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+  .subtitle { margin-top: 8px; color: var(--muted); font-size: 14px; letter-spacing: 0.05em; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .tab-btn {
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 10px 20px; background: none; border: none;
+    color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 24px; }
+  .card-label { font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+  .input-group { display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+
+  input[type="text"], select {
+    background: var(--bg); border: 1px solid var(--border-bright);
+    color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 16px; padding: 11px 14px; border-radius: 2px;
+    outline: none; transition: border-color 0.2s; width: 100%;
+  }
+  input[type="text"]:focus, select:focus { border-color: var(--accent); }
+  input[type="text"].input-error { border-color: var(--red); background: rgba(224,92,92,0.05); }
+  .input-hint { font-size: 12px; color: var(--muted); margin-top: 2px; letter-spacing: 0.03em; }
+  .input-hint.ok { color: var(--green); }
+  .input-hint.error { color: var(--red); }
+
+  .btn-calc {
+    width: 100%; background: var(--accent); color: #0a0c0f;
+    border: none; font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 13px; border-radius: 2px; cursor: pointer; margin-top: 4px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-calc:hover { opacity: 0.85; }
+  .btn-calc:active { transform: scale(0.99); }
+
+  /* Result */
+  .result-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 26px; margin-bottom: 16px; display: none;
+  }
+  .result-card.show { display: block; }
+  .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .result-pair { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .result-index { font-family: 'Syne', sans-serif; font-size: 50px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+  .bias-badge { display: inline-block; padding: 3px 12px; border-radius: 2px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 6px; }
+  .signal-text { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+  .formula-line { font-size: 13px; color: var(--muted); line-height: 1.8; }
+  .formula-line span { color: var(--accent); }
+
+  .gauge-wrap { margin: 20px 0 16px; }
+  .gauge-track { height: 6px; border-radius: 3px; position: relative; margin-bottom: 6px;
+    background: linear-gradient(90deg, var(--red) 0%, var(--red) 10%, var(--yellow) 25%, var(--yellow) 40%, var(--neutral) 50%, var(--yellow) 60%, var(--green) 75%, var(--green) 90%, #3dffc8 100%);
+  }
+  .gauge-needle { position: absolute; top: -5px; width: 3px; height: 16px; background: #fff; border-radius: 2px; transform: translateX(-50%); transition: left 0.6s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 0 8px rgba(255,255,255,0.6); }
+  .gauge-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  /* History */
+  .history-section { margin-top: 4px; max-height: 340px; overflow-y: auto; }
+  .history-item {
+    display: flex; align-items: center; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 13px; gap: 6px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .h-date { color: var(--muted); width: 46px; flex-shrink: 0; font-size: 12px; }
+  .h-pair { color: var(--text); width: 56px; flex-shrink: 0; font-weight: 700; }
+  .h-index { font-weight: 700; width: 48px; flex-shrink: 0; text-align: right; }
+  .h-badge-wrap { flex: 1; min-width: 0; }
+  .h-del {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 16px; padding: 2px 6px; border-radius: 2px; line-height: 1;
+    transition: color 0.15s, background 0.15s; flex-shrink: 0;
+  }
+  .h-del:hover { color: var(--red); background: rgba(224,92,92,0.1); }
+  .no-history { color: var(--muted); font-size: 14px; padding: 20px 0; text-align: center; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-sm {
+    background: none; border: 1px solid var(--border-bright); color: var(--muted);
+    font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.06em;
+    padding: 5px 10px; border-radius: 2px; cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-sm:hover { color: var(--text); border-color: var(--muted); }
+  .btn-sm.accent-btn { border-color: var(--accent); color: var(--accent); }
+  .btn-sm.accent-btn:hover { background: rgba(200,169,110,0.1); }
+
+  /* Reference table */
+  .ref-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+  .ref-title { padding: 12px 18px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 10px 16px; text-align: left; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .zone-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+  .action-note { color: var(--muted); font-size: 12px; }
+
+  /* ── COT MATRIX ─────────────────────────────────────── */
+  .matrix-container { display: none; }
+  .matrix-container.show { display: block; }
+
+  .matrix-header-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+  }
+  .matrix-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.05em; }
+  .matrix-week { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+
+  .matrix-table-wrap { overflow-x: auto; margin-bottom: 16px; }
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+  .matrix-table th { padding: 11px 14px; text-align: left; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--border-bright); font-weight: 400; white-space: nowrap; }
+  .matrix-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .pair-tag { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .trend-up { color: var(--green); }
+  .trend-dn { color: var(--red); }
+  .trend-flat { color: var(--muted); }
+
+  .cot-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .cot-bar-track { width: 80px; height: 4px; background: var(--border-bright); border-radius: 2px; flex-shrink: 0; }
+  .cot-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+  .cot-val { font-weight: 700; min-width: 38px; text-align: right; font-size: 14px; }
+
+  /* Ranking */
+  .ranking-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
+  .ranking-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .ranking-list { display: flex; flex-direction: column; gap: 6px; }
+  .ranking-item { display: flex; align-items: center; gap: 10px; }
+  .rank-num { width: 24px; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .rank-pair { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; width: 48px; flex-shrink: 0; }
+  .rank-bar-track { flex: 1; height: 4px; background: var(--border-bright); border-radius: 2px; }
+  .rank-bar-fill { height: 100%; border-radius: 2px; }
+  .rank-idx { font-size: 13px; font-weight: 700; width: 42px; text-align: right; flex-shrink: 0; }
+  .rank-label { font-size: 11px; color: var(--muted); width: 85px; flex-shrink: 0; text-align: right; }
+
+  /* Best pairs */
+  .pairs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
+  .pairs-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .pairs-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .pairs-grid { grid-template-columns: 1fr; } }
+  .pairs-section-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+  .pair-chip { display: inline-block; padding: 3px 8px; border-radius: 2px; font-size: 13px; font-weight: 700; margin: 2px 2px; letter-spacing: 0.03em; }
+
+  .progress-bar { height: 2px; background: var(--border); margin-bottom: 12px; border-radius: 1px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+  .footer-note { margin-top: 40px; font-size: 12px; color: var(--muted); letter-spacing: 0.05em; text-align: center; border-top: 1px solid var(--border); padding-top: 20px; line-height: 1.8; }
+
+  /* Matrix input panel */
+  .matrix-input-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
+  .matrix-input-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .matrix-input-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .matrix-row-inputs { display: grid; grid-template-columns: 105px 1fr 1fr 1fr 1fr 1fr auto; gap: 6px; align-items: end; margin-bottom: 6px; }
+  @media (max-width: 700px) { .matrix-row-inputs { grid-template-columns: 1fr 1fr 1fr; } }
+  .matrix-row-inputs label { font-size: 11px; }
+  .matrix-row-inputs .field { gap: 3px; }
+  .matrix-row-inputs input { font-size: 14px; padding: 7px 8px; }
+  .btn-add-row {
+    background: rgba(200,169,110,0.1); border: 1px solid var(--accent);
+    color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px;
+    letter-spacing: 0.08em; padding: 7px 12px; border-radius: 2px; cursor: pointer;
+    white-space: nowrap; transition: background 0.2s; align-self: end;
+  }
+  .btn-add-row:hover { background: rgba(200,169,110,0.2); }
+  .matrix-entries { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .matrix-entry-row {
+    display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 2px; font-size: 13px;
+  }
+  .entry-pair { font-weight: 700; width: 50px; flex-shrink: 0; }
+  .entry-vals { flex: 1; color: var(--muted); font-size: 12px; }
+  .entry-idx { font-weight: 700; }
+  .entry-del { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 2px; font-size: 16px; transition: color 0.15s; }
+  .entry-del:hover { color: var(--red); }
+  .btn-gen-matrix {
+    width: 100%; background: var(--accent); color: #0a0c0f;
+    border: none; font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 12px; border-radius: 2px; cursor: pointer; transition: opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-gen-matrix:hover { opacity: 0.85; }
+  /* ── GITHUB CONFIG BANNER ─────────────────────────── */
+  .gh-config-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    padding: 20px; margin-bottom: 16px; transition: all 0.3s;
+  }
+  .gh-config-card.collapsed { padding: 10px 20px; }
+  .gh-config-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .gh-config-title {
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+  }
+  .gh-config-title .gh-icon { color: var(--accent); margin-right: 6px; }
+  .gh-config-body { margin-top: 14px; }
+  .gh-config-body.hidden { display: none; }
+  .gh-config-row {
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;
+    align-items: end;
+  }
+  @media (max-width: 600px) { .gh-config-row { grid-template-columns: 1fr; } }
+  .gh-config-row .field label { font-size: 12px; }
+  .gh-config-row input { font-size: 14px; padding: 8px 10px; }
+  .gh-status-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .gh-status-text {
+    font-size: 12px; color: var(--muted); letter-spacing: 0.04em;
+  }
+  .gh-status-text .gh-repo-link {
+    color: var(--accent); font-weight: 700; text-decoration: none;
+  }
+  .gh-status-text .gh-repo-link:hover { text-decoration: underline; }
+  .btn-gh-save {
+    background: var(--accent); color: #0a0c0f; border: none;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px 16px; border-radius: 2px; cursor: pointer;
+    transition: opacity 0.2s; white-space: nowrap;
+  }
+  .btn-gh-save:hover { opacity: 0.85; }
+  .btn-gh-edit {
+    background: none; border: 1px solid var(--border-bright); color: var(--muted);
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
+    padding: 4px 10px; border-radius: 2px; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s; white-space: nowrap;
+  }
+  .btn-gh-edit:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── FETCH CFTC BUTTON ──────────────────────────────── */
+  .gh-fetch-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-fetch-cftc {
+    background: var(--green); color: #0a0c0f; border: none;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 10px 20px; border-radius: 2px; cursor: pointer;
+    transition: opacity 0.2s, background 0.3s, transform 0.1s;
+    display: inline-flex; align-items: center; gap: 8px;
+    position: relative; overflow: hidden;
+  }
+  .btn-fetch-cftc:hover:not(:disabled) { opacity: 0.88; }
+  .btn-fetch-cftc:active:not(:disabled) { transform: scale(0.98); }
+  .btn-fetch-cftc:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-fetch-cftc.loading { background: var(--accent); pointer-events: none; }
+  .btn-fetch-cftc.success {
+    background: var(--green);
+    animation: flash-green 0.6s ease;
+  }
+  .btn-fetch-cftc.error { background: var(--red); }
+  @keyframes flash-green {
+    0%   { box-shadow: 0 0 0 0 rgba(92,200,160,0.5); }
+    50%  { box-shadow: 0 0 16px 4px rgba(92,200,160,0.3); }
+    100% { box-shadow: none; }
+  }
+  .fetch-spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(0,0,0,0.2); border-top-color: #0a0c0f;
+    border-radius: 50%; animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fetch-status {
+    font-size: 12px; color: var(--muted); letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+  .fetch-status.error { color: var(--red); }
+  .fetch-status.warn { color: var(--yellow); }
+  .fetch-cache-info {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.04em;
+    padding: 4px 0; line-height: 1.6;
+  }
+  .fetch-cache-info .cache-label { color: var(--accent); font-weight: 700; }
+
+  /* ── DATA SOURCE BADGE ──────────────────────────────── */
+  .data-source-badge {
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 2px; font-weight: 700;
+    white-space: nowrap;
+  }
+  .data-source-badge.auto {
+    color: var(--green); background: rgba(92,200,160,0.1);
+    border: 1px solid rgba(92,200,160,0.2);
+  }
+  .data-source-badge.manual {
+    color: var(--muted); background: rgba(136,153,187,0.08);
+    border: 1px solid rgba(136,153,187,0.15);
+  }
+
+  /* ── EXPORT PANEL ─────────────────────────────────── */
+  .export-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 16px; display: none; }
+  .export-panel.show { display: block; }
+  .export-panel-head { padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+  .export-panel-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  .export-fmt-tabs { display: flex; gap: 4px; }
+  .efmt-btn {
+    font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.06em;
+    padding: 5px 12px; background: none; border: 1px solid var(--border-bright);
+    color: var(--muted); cursor: pointer; border-radius: 2px; transition: all 0.15s;
+  }
+  .efmt-btn:hover { color: var(--text); border-color: var(--muted); }
+  .efmt-btn.active { background: rgba(200,169,110,0.12); border-color: var(--accent); color: var(--accent); }
+  .export-body { padding: 0; position: relative; }
+  .export-textarea {
+    width: 100%; min-height: 280px; max-height: 420px;
+    background: #070910; color: #8fa8c0;
+    font-family: 'Space Mono', monospace; font-size: 13px; line-height: 1.7;
+    padding: 16px 20px; border: none; resize: vertical; outline: none;
+    display: block;
+  }
+  .export-actions { display: flex; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border); background: var(--bg); flex-wrap: wrap; align-items: center; }
+  .exp-filename { font-size: 12px; color: var(--muted); margin-left: auto; letter-spacing: 0.05em; }
+  /* Toast */
+  .exp-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: var(--green); color: #0a0c0f; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; padding: 10px 22px; border-radius: 2px; z-index: 999; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+  .exp-toast.show { opacity: 1; }
+  .exp-toast.error-toast { background: var(--red); }
+  .exp-toast.warn-toast { background: var(--yellow); color: #0a0c0f; }
+
+  /* ── IMPORT MODAL ─────────────────────────────────── */
+  .imp-overlay {
+    position: fixed; inset: 0; z-index: 900;
+    background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .imp-overlay.show { opacity: 1; pointer-events: auto; }
+
+  .imp-modal {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    border-radius: 6px; width: 92%; max-width: 720px; max-height: 88vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .imp-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .imp-title {
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+  }
+  .imp-close {
+    background: none; border: none; color: var(--muted); font-size: 20px;
+    cursor: pointer; padding: 4px 8px; border-radius: 2px; line-height: 1;
+    transition: color 0.15s, background 0.15s;
+  }
+  .imp-close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+  .imp-method-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  }
+  .imp-method-btn {
+    flex: 1; font-family: 'Space Mono', monospace; font-size: 12px;
+    letter-spacing: 0.06em; padding: 10px 10px 9px; background: none;
+    border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); cursor: pointer; text-align: center;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .imp-method-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.02); }
+  .imp-method-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .imp-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+
+  .imp-panel { display: none; }
+  .imp-panel.active { display: block; }
+
+  .imp-label {
+    font-size: 12px; color: var(--muted); letter-spacing: 0.08em;
+    margin-bottom: 6px; display: block;
+  }
+  .imp-textarea {
+    width: 100%; min-height: 140px; max-height: 220px;
+    background: var(--bg); border: 1px solid var(--border-bright);
+    color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 13px; line-height: 1.6; padding: 12px 14px;
+    border-radius: 2px; resize: vertical; outline: none;
+    transition: border-color 0.2s;
+  }
+  .imp-textarea:focus { border-color: var(--accent); }
+  .imp-textarea::placeholder { color: var(--muted); opacity: 0.6; }
+
+  .imp-drop-zone {
+    border: 2px dashed var(--border-bright); border-radius: 4px;
+    padding: 32px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .imp-drop-zone:hover, .imp-drop-zone.drag-over {
+    border-color: var(--accent); background: rgba(200,169,110,0.04);
+  }
+  .imp-drop-icon { font-size: 28px; margin-bottom: 8px; display: block; color: var(--muted); }
+  .imp-drop-main { font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .imp-drop-sub { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+  .imp-file-input { display: none; }
+  .imp-file-name {
+    margin-top: 10px; font-size: 13px; color: var(--accent); font-weight: 700;
+    display: none; text-align: center;
+  }
+  .imp-file-name.show { display: block; }
+
+  .imp-hint {
+    font-size: 12px; color: var(--muted); margin-top: 8px;
+    line-height: 1.6; letter-spacing: 0.03em;
+  }
+  .imp-hint code {
+    background: rgba(200,169,110,0.1); color: var(--accent);
+    padding: 1px 5px; border-radius: 2px; font-size: 12px;
+  }
+
+  /* Preview */
+  .imp-preview-wrap {
+    margin-top: 14px; display: none;
+  }
+  .imp-preview-wrap.show { display: block; }
+
+  .imp-preview-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; flex-wrap: wrap; gap: 6px;
+  }
+  .imp-preview-title {
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
+  }
+  .imp-preview-count {
+    font-size: 12px; color: var(--muted);
+  }
+
+  .imp-preview-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 2px;
+  }
+  .imp-preview-table th {
+    padding: 7px 8px; text-align: left; font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--border-bright);
+    font-weight: 400; white-space: nowrap;
+  }
+  .imp-preview-table td {
+    padding: 7px 8px; border-bottom: 1px solid var(--border);
+    vertical-align: middle; white-space: nowrap;
+  }
+  .imp-preview-table tr:last-child td { border-bottom: none; }
+  .imp-preview-table tr.imp-row-error td { background: rgba(224,92,92,0.06); }
+  .imp-preview-table .imp-err-msg {
+    color: var(--red); font-size: 11px; font-style: italic;
+  }
+  .imp-status {
+    display: inline-block; padding: 2px 7px; border-radius: 2px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  }
+
+  .imp-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-top: 1px solid var(--border);
+    background: var(--bg); flex-wrap: wrap; gap: 8px;
+  }
+  .imp-footer-info { font-size: 12px; color: var(--muted); }
+  .imp-footer-info .imp-ok { color: var(--green); font-weight: 700; }
+  .imp-footer-info .imp-err { color: var(--red); font-weight: 700; }
+
+  .btn-imp-load {
+    background: var(--accent); color: #0a0c0f; border: none;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 9px 20px; border-radius: 2px; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-imp-load:hover { opacity: 0.85; }
+  .btn-imp-load:active { transform: scale(0.98); }
+  .btn-imp-load:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-imp-import {
+    background: rgba(200,169,110,0.1); border: 1px solid var(--accent);
+    color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px;
+    letter-spacing: 0.08em; padding: 7px 14px; border-radius: 2px; cursor: pointer;
+    white-space: nowrap; transition: background 0.2s;
+  }
+  .btn-imp-import:hover { background: rgba(200,169,110,0.2); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="tag">⬡ ICT Trader Tools</div>
+    <h1>COT <span>Index</span> Calculator</h1>
+    <div class="subtitle">Commitment of Traders · 52-Week Normalized Positioning · Macro Bias Filter</div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calc')">⬡ Tính COT Index</button>
+    <button class="tab-btn" onclick="switchTab('matrix')">⬢ COT Matrix</button>
+    <button class="tab-btn" onclick="switchTab('ref')">⊞ Bảng Tham Chiếu</button>
+  </div>
+
+  <!-- ══ TAB 1: CALCULATOR ══════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-calc">
+    <div class="grid">
+      <!-- Input -->
+      <div class="card">
+        <div class="card-label">Thông Số Đầu Vào</div>
+        <div class="input-group">
+          <div class="field">
+            <label>Cặp tiền / Đồng tiền</label>
+            <select id="pair">
+              <option value="EUR">EUR – Euro</option>
+              <option value="GBP">GBP – British Pound</option>
+              <option value="USD">USD – US Dollar Index</option>
+              <option value="JPY">JPY – Japanese Yen</option>
+              <option value="AUD">AUD – Australian Dollar</option>
+              <option value="CAD">CAD – Canadian Dollar</option>
+              <option value="NZD">NZD – New Zealand Dollar</option>
+              <option value="CHF">CHF – Swiss Franc</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Net Position Hiện Tại</label>
+            <input type="text" id="current" placeholder="VD: 45.000" autocomplete="off" />
+            <div class="input-hint" id="hint-current">Dấu chấm = nghìn · Dấu phẩy = thập phân</div>
+          </div>
+          <div class="field">
+            <label>Net Tuần Trước <span style="color:var(--muted);font-size:9px">(tuỳ chọn)</span></label>
+            <input type="text" id="prev" placeholder="VD: 40.000" autocomplete="off" />
+            <div class="input-hint" id="hint-prev">Dùng để tính xu hướng tuần</div>
+          </div>
+          <div class="field">
+            <label>Net Thấp Nhất (52 tuần)</label>
+            <input type="text" id="low52" placeholder="VD: -80.000" autocomplete="off" />
+            <div class="input-hint" id="hint-low52">Cho phép số âm: −80.000</div>
+          </div>
+          <div class="field">
+            <label>Net Cao Nhất (52 tuần)</label>
+            <input type="text" id="high52" placeholder="VD: 120.000" autocomplete="off" />
+            <div class="input-hint" id="hint-high52">Phải lớn hơn Net Thấp Nhất</div>
+          </div>
+          <button class="btn-calc" onclick="calculate()">↗ Tính COT Index</button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-label">Lịch Sử Tính Toán</div>
+        <div class="history-section" id="historyList">
+          <div class="no-history">Chưa có dữ liệu</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-sm accent-btn" onclick="sendToMatrix()" title="Đưa lịch sử vào COT Matrix">↗ Gửi sang Matrix</button>
+          <button class="btn-sm" onclick="clearHistory()" style="margin-left:auto">✕ Xoá tất cả</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <div>
+          <div class="result-pair" id="resPair">—</div>
+          <div class="result-index" id="resIndex">—</div>
+          <div class="bias-badge" id="resBadge">—</div>
+        </div>
+        <div style="text-align:right; max-width: 320px;">
+          <div class="signal-text" id="resSignal">—</div>
+          <div style="margin-top: 10px;" class="formula-line" id="resFormula"></div>
+        </div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-track">
+          <div class="gauge-needle" id="needle" style="left:0%"></div>
+        </div>
+        <div class="gauge-labels">
+          <span>0 Bear</span><span>25</span><span>50 Neutral</span><span>75</span><span>100 Bull</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="formula-line" id="resCalc"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 2: COT MATRIX ══════════════════════════════════ -->
+  <div class="tab-panel" id="tab-matrix">
+
+    <!-- ═══ GITHUB CONFIG BANNER ═══ -->
+    <div class="gh-config-card" id="ghConfigCard">
+      <div class="gh-config-header">
+        <span class="gh-config-title"><span class="gh-icon">⬡</span>GitHub Auto-Fetch CFTC</span>
+        <span id="ghHeaderRight"></span>
+      </div>
+      <div class="gh-config-body" id="ghConfigBody">
+        <div class="gh-config-row">
+          <div class="field">
+            <label>GitHub Username</label>
+            <input type="text" id="ghUsername" placeholder="your-username" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Tên Repo</label>
+            <input type="text" id="ghRepo" placeholder="cot-data" autocomplete="off" />
+          </div>
+          <button class="btn-gh-save" onclick="saveGhConfig()">Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FETCH CFTC BUTTON ═══ -->
+    <div class="gh-fetch-row" id="ghFetchRow">
+      <button class="btn-fetch-cftc" id="btnFetchCftc" onclick="fetchCftcFromGitHub()" disabled
+        title="Chưa cấu hình GitHub — hãy nhập Username và Repo ở trên">
+        ⬡ Lấy Dữ Liệu CFTC
+      </button>
+      <span class="fetch-status" id="fetchStatus"></span>
+    </div>
+    <div class="fetch-cache-info" id="fetchCacheInfo"></div>
+
+    <!-- Input panel -->
+    <div class="matrix-input-card">
+      <div class="matrix-input-title">Nhập Dữ Liệu Matrix</div>
+      <div class="matrix-input-sub">Nhập từng đồng tiền · tối thiểu 2, tối đa 8 · Dữ liệu từ CFTC.gov mỗi thứ Sáu</div>
+
+      <div class="matrix-row-inputs">
+        <div class="field">
+          <label>Đồng tiền</label>
+          <select id="m-pair">
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="USD">USD</option>
+            <option value="JPY">JPY</option>
+            <option value="AUD">AUD</option>
+            <option value="CAD">CAD</option>
+            <option value="NZD">NZD</option>
+            <option value="CHF">CHF</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Net hiện tại</label>
+          <input type="text" id="m-cur" placeholder="45.000" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Net tuần trước</label>
+          <input type="text" id="m-prev" placeholder="40.000" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Net thấp 52t</label>
+          <input type="text" id="m-lo" placeholder="-80.000" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Net cao 52t</label>
+          <input type="text" id="m-hi" placeholder="120.000" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Xu hướng 4t <span style="color:var(--muted);font-size:9px">(tuỳ chọn)</span></label>
+          <select id="m-trend4">
+            <option value="">—</option>
+            <option value="Tăng mạnh">Tăng mạnh</option>
+            <option value="Tăng">Tăng</option>
+            <option value="Tăng nhẹ">Tăng nhẹ</option>
+            <option value="Ổn định">Ổn định</option>
+            <option value="Giảm nhẹ">Giảm nhẹ</option>
+            <option value="Giảm">Giảm</option>
+            <option value="Giảm mạnh">Giảm mạnh</option>
+          </select>
+        </div>
+        <button class="btn-add-row" onclick="addMatrixEntry()">+ Thêm</button>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-label" id="progressLabel">0 / 8 đồng tiền</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+      <!-- Entries list -->
+      <div class="matrix-entries" id="matrixEntries"></div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn-imp-import" onclick="openImportModal()" title="Import dữ liệu từ CSV, JSON, Markdown hoặc File">⬆ Import</button>
+        <button class="btn-gen-matrix" id="btnGenMatrix" onclick="generateMatrix()" disabled style="flex:1">
+          ⬢ Tạo COT Matrix
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ IMPORT MODAL ═══ -->
+    <div class="imp-overlay" id="impOverlay" onclick="if(event.target===this)closeImportModal()">
+      <div class="imp-modal">
+        <div class="imp-header">
+          <span class="imp-title">⬆ Import Dữ Liệu</span>
+          <button class="imp-close" onclick="closeImportModal()" title="Đóng">×</button>
+        </div>
+
+        <div class="imp-method-tabs">
+          <button class="imp-method-btn active" onclick="switchImpMethod('csv')" id="impTab-csv">① CSV / Paste</button>
+          <button class="imp-method-btn" onclick="switchImpMethod('json')" id="impTab-json">② JSON</button>
+          <button class="imp-method-btn" onclick="switchImpMethod('md')" id="impTab-md">③ Markdown</button>
+          <button class="imp-method-btn" onclick="switchImpMethod('file')" id="impTab-file">④ Upload File</button>
+        </div>
+
+        <div class="imp-body">
+          <!-- Panel 1: CSV / Paste -->
+          <div class="imp-panel active" id="impPanel-csv">
+            <label class="imp-label">Paste dữ liệu từ Excel, Google Sheets hoặc CSV</label>
+            <textarea class="imp-textarea" id="impCsvText" placeholder="EUR	45000	40000	-80000	120000	Tăng mạnh
+GBP	30000	25000	-50000	90000	Giảm
+..."
+              oninput="parseImportCSV()"></textarea>
+            <div class="imp-hint">
+              Thứ tự cột: <code>Pair</code> <code>Net Current</code> <code>Net Prev</code> <code>Net Low</code> <code>Net High</code> <code>Trend4W</code><br>
+              Tự detect dấu phân cách: Tab ↹, dấu chấm phẩy (;), dấu phẩy (,)
+            </div>
+          </div>
+
+          <!-- Panel 2: JSON -->
+          <div class="imp-panel" id="impPanel-json">
+            <label class="imp-label">Paste JSON array</label>
+            <textarea class="imp-textarea" id="impJsonText" placeholder='[
+  {"pair":"EUR","cur":45000,"prev":40000,"lo":-80000,"hi":120000,"t4":"Tăng mạnh"},
+  {"pair":"GBP","current":30000,"prev":25000,"low52":-50000,"high52":90000}
+]'
+              oninput="parseImportJSON()"></textarea>
+            <div class="imp-hint">
+              Hỗ trợ nhiều tên field:<br>
+              Net hiện tại: <code>cur</code> <code>current</code> <code>net</code> <code>netCurrent</code><br>
+              Net thấp: <code>lo</code> <code>low</code> <code>low52</code> <code>netLow</code><br>
+              Net cao: <code>hi</code> <code>high</code> <code>high52</code> <code>netHigh</code><br>
+              Net trước: <code>prev</code> <code>previous</code> <code>netPrev</code><br>
+              Xu hướng: <code>t4</code> <code>trend</code> <code>trend4w</code>
+            </div>
+          </div>
+
+          <!-- Panel 3: Markdown -->
+          <div class="imp-panel" id="impPanel-md">
+            <label class="imp-label">Paste nội dung Markdown đã xuất từ lần trước</label>
+            <textarea class="imp-textarea" id="impMdText" placeholder="# COT MATRIX — Tuần 25/02/2026
+...
+| **EUR** | 45.000 | -80.000 | 120.000 | 40.000 | ... |
+| **GBP** | 30.000 | -50.000 | 90.000  | 25.000 | ... |
+..."
+              oninput="parseImportMD()"></textarea>
+            <div class="imp-hint">
+              Dán toàn bộ file <code>.md</code> đã export. Tool sẽ tự parse bảng COT Matrix.
+            </div>
+          </div>
+
+          <!-- Panel 4: Upload File -->
+          <div class="imp-panel" id="impPanel-file">
+            <div class="imp-drop-zone" id="impDropZone"
+              onclick="document.getElementById('impFileInput').click()"
+              ondragover="event.preventDefault();this.classList.add('drag-over')"
+              ondragleave="this.classList.remove('drag-over')"
+              ondrop="event.preventDefault();this.classList.remove('drag-over');handleImportFile(event.dataTransfer.files[0])">
+              <span class="imp-drop-icon">📂</span>
+              <div class="imp-drop-main">Kéo thả file hoặc bấm để chọn</div>
+              <div class="imp-drop-sub">.csv · .json · .md · .txt</div>
+            </div>
+            <input type="file" class="imp-file-input" id="impFileInput" accept=".csv,.json,.md,.txt,.tsv" onchange="handleImportFile(this.files[0])">
+            <div class="imp-file-name" id="impFileName"></div>
+          </div>
+
+          <!-- Shared Preview -->
+          <div class="imp-preview-wrap" id="impPreview">
+            <div class="imp-preview-head">
+              <span class="imp-preview-title">Preview</span>
+              <span class="imp-preview-count" id="impPreviewCount"></span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="imp-preview-table">
+                <thead><tr>
+                  <th>Pair</th><th>Net Current</th><th>Net Prev</th>
+                  <th>Net Low</th><th>Net High</th><th>Trend 4W</th>
+                  <th>COT Index</th><th>Zone</th><th>Status</th>
+                </tr></thead>
+                <tbody id="impPreviewBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="imp-footer">
+          <div class="imp-footer-info" id="impFooterInfo">Chưa có dữ liệu để preview</div>
+          <button class="btn-imp-load" id="btnImpLoad" onclick="loadImportToMatrix()" disabled>✓ Nạp vào Matrix</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Matrix output -->
+    <div class="matrix-container" id="matrixOutput">
+      <div class="ref-card">
+        <div class="ref-title">
+          <span id="matrixTitleText">COT MATRIX</span>
+          <span style="display:flex;align-items:center;gap:8px">
+            <span class="data-source-badge" id="dataSourceBadge" style="display:none"></span>
+            <span id="matrixWeekText" style="font-size:9px;color:var(--muted)"></span>
+          </span>
+        </div>
+        <div class="matrix-table-wrap">
+          <table class="matrix-table" id="matrixTable">
+            <thead>
+              <tr>
+                <th>Đồng tiền</th>
+                <th>Net hiện tại</th>
+                <th>Net thấp 52T</th>
+                <th>Net cao 52T</th>
+                <th>Net tuần trước</th>
+                <th>Δ Tuần</th>
+                <th>Xu hướng 4T</th>
+                <th>COT Index</th>
+                <th>Đánh giá</th>
+              </tr>
+            </thead>
+            <tbody id="matrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ranking -->
+      <div class="ranking-card">
+        <div class="ranking-title">⊕ Ranking Sức Mạnh Đồng Tiền (Mạnh → Yếu)</div>
+        <div class="ranking-list" id="rankingList"></div>
+      </div>
+
+      <!-- Best Pairs -->
+      <div class="pairs-card">
+        <div class="pairs-title">⊕ Best Pairs Theo COT</div>
+        <div class="pairs-grid" id="pairsGrid"></div>
+      </div>
+
+      <!-- Export Panel -->
+      <div class="export-panel" id="exportPanel">
+        <div class="export-panel-head">
+          <span class="export-panel-title">⬇ Xuất Kết Quả</span>
+          <div class="export-fmt-tabs">
+            <button class="efmt-btn active" id="efmt-md"   onclick="switchExportFmt('md')">Markdown</button>
+            <button class="efmt-btn"        id="efmt-json" onclick="switchExportFmt('json')">JSON</button>
+            <button class="efmt-btn"        id="efmt-csv"  onclick="switchExportFmt('csv')">CSV</button>
+            <button class="efmt-btn"        id="efmt-txt"  onclick="switchExportFmt('txt')">Summary</button>
+          </div>
+        </div>
+        <div class="export-body">
+          <textarea class="export-textarea" id="exportTextarea" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="export-actions">
+          <button class="btn-sm accent-btn" onclick="copyExport()">⎘ Copy</button>
+          <button class="btn-sm accent-btn" onclick="downloadExport()">⬇ Tải về</button>
+          <span class="exp-filename" id="expFilename"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 3: REFERENCE ══════════════════════════════════ -->
+  <div class="tab-panel" id="tab-ref">
+    <div class="ref-card">
+      <div class="ref-title"><span>Bảng Tham Chiếu COT Index</span></div>
+      <table>
+        <thead>
+          <tr><th>COT Index</th><th>Ý Nghĩa</th><th>ICT Bias</th><th>Hành Động</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="zone-dot" style="background:var(--red)"></span>0 – 10</td>
+            <td>Cực kỳ bearish</td><td><span style="color:var(--red)">EXTREME BEAR</span></td>
+            <td class="action-note">⚠ Cẩn thận reversal tăng</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#e07a5c"></span>10 – 25</td>
+            <td>Bearish mạnh</td><td><span style="color:#e07a5c">BEARISH</span></td>
+            <td class="action-note">Short bias – monitor</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:var(--yellow)"></span>25 – 40</td>
+            <td>Bearish vừa</td><td><span style="color:var(--yellow)">BEARISH MILD</span></td>
+            <td class="action-note">Short bias bình thường</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:var(--neutral)"></span>40 – 60</td>
+            <td>Neutral</td><td><span style="color:var(--neutral)">NEUTRAL</span></td>
+            <td class="action-note">Cần tín hiệu ICT khác</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#8bc88a"></span>60 – 75</td>
+            <td>Bullish vừa</td><td><span style="color:#8bc88a">BULLISH MILD</span></td>
+            <td class="action-note">Long bias bình thường</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:var(--green)"></span>75 – 90</td>
+            <td>Bullish mạnh</td><td><span style="color:var(--green)">BULLISH</span></td>
+            <td class="action-note">Long bias – monitor</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#3dffc8"></span>90 – 100</td>
+            <td>Cực kỳ bullish</td><td><span style="color:#3dffc8">EXTREME BULL</span></td>
+            <td class="action-note">⚠ Cẩn thận reversal giảm</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="exp-toast" id="expToast"></div>
+
+  <div class="footer-note">
+    COT Index = (Net Hiện Tại − Net Thấp Nhất 52T) ÷ (Net Cao Nhất − Net Thấp Nhất) × 100<br>
+    Nguồn dữ liệu: CFTC.gov · Cập nhật mỗi thứ Sáu · Dùng kết hợp ICT HTF Narrative &amp; Daily Bias
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  ZONES
+// ═══════════════════════════════════════════════════
+const ZONES = [
+  { max: 10,  label: 'EXTREME BEAR',  color: '#e05c5c', bg: 'rgba(224,92,92,0.12)',
+    signal: 'Positioning cực bearish – Spec đang short quá mức. Cẩn thận Smart Money có thể đang accumulate để push giá tăng (reversal risk).',
+    ictAction: 'Chỉ short nếu có HTF confirmation rõ ràng + liquidity target phía dưới.' },
+  { max: 25,  label: 'BEARISH',       color: '#e07a5c', bg: 'rgba(224,122,92,0.12)',
+    signal: 'Bearish mạnh. Spec đang nắm nhiều short. Phù hợp short bias nhưng cần monitor dấu hiệu MSS bullish.',
+    ictAction: 'Ưu tiên sell setup tại OB/FVG premium. Tránh buy ngược xu hướng.' },
+  { max: 40,  label: 'BEARISH MILD',  color: '#e0c05c', bg: 'rgba(224,192,92,0.1)',
+    signal: 'Bearish vừa phải. Short bias hợp lệ. Theo dõi xem positioning có tiếp tục tăng về phía bearish hay đang turn.',
+    ictAction: 'Sell setup tiêu chuẩn. Không aggressive, cần LTF confirmation đầy đủ.' },
+  { max: 60,  label: 'NEUTRAL',       color: '#8899bb', bg: 'rgba(136,153,187,0.1)',
+    signal: 'Positioning trung tính. Không có bias rõ ràng từ COT. Cần confluence từ ICT structure, liquidity, và price action.',
+    ictAction: 'NO TRADE từ COT. Dùng HTF narrative + liquidity map làm cơ sở chính.' },
+  { max: 75,  label: 'BULLISH MILD',  color: '#8bc88a', bg: 'rgba(139,200,138,0.1)',
+    signal: 'Bullish vừa phải. Long bias hợp lệ. Spec đang nắm nhiều long hơn mức trung bình.',
+    ictAction: 'Buy setup tiêu chuẩn. Ưu tiên discount zone + OB/FVG.' },
+  { max: 90,  label: 'BULLISH',       color: '#5cc8a0', bg: 'rgba(92,200,160,0.12)',
+    signal: 'Bullish mạnh. Spec đang long nặng. Xu hướng tăng rõ ràng nhưng theo dõi khi gần extreme.',
+    ictAction: 'Ưu tiên buy setup tại OB/FVG discount. Hạn chế sell ngược xu hướng.' },
+  { max: 101, label: 'EXTREME BULL',  color: '#3dffc8', bg: 'rgba(61,255,200,0.1)',
+    signal: 'Positioning cực bullish – Spec đang long quá mức. Cẩn thận Smart Money có thể đang distribute (reversal risk).',
+    ictAction: 'Chỉ long nếu có HTF confirmation + liquidity target phía trên. Cẩn thận.' },
+];
+
+function getZone(val) { return ZONES.find(z => val < z.max) || ZONES[ZONES.length-1]; }
+
+// ═══════════════════════════════════════════════════
+//  VN NUMBER FORMAT
+// ═══════════════════════════════════════════════════
+function parseVN(raw) {
+  if (!raw && raw !== 0) return NaN;
+  const str = String(raw).trim().replace(/\s/g, '');
+  if (!str) return NaN;
+  const negative = str.startsWith('-') || str.startsWith('−');
+  const abs = str.replace(/^[-−]/, '');
+  const dots = (abs.match(/\./g) || []).length;
+  const commas = (abs.match(/,/g) || []).length;
+  let numeric;
+  if (dots === 0 && commas === 0) {
+    numeric = parseFloat(abs);
+  } else if (dots > 0 && commas === 0) {
+    const lastDotIdx = abs.lastIndexOf('.');
+    const afterDot = abs.slice(lastDotIdx + 1);
+    if (dots === 1 && afterDot.length !== 3) numeric = parseFloat(abs);
+    else numeric = parseFloat(abs.replace(/\./g, ''));
+  } else if (dots === 0 && commas > 0) {
+    if (commas === 1) numeric = parseFloat(abs.replace(',', '.'));
+    else numeric = parseFloat(abs.replace(/,/g, ''));
+  } else {
+    const lastDot = abs.lastIndexOf('.');
+    const lastComma = abs.lastIndexOf(',');
+    if (lastComma > lastDot) numeric = parseFloat(abs.replace(/\./g, '').replace(',', '.'));
+    else numeric = parseFloat(abs.replace(/,/g, ''));
+  }
+  if (isNaN(numeric)) return NaN;
+  return negative ? -numeric : numeric;
+}
+
+function fmtVN(num) { return num.toLocaleString('vi-VN'); }
+function fmtIdx(val) { return val.toFixed(1).replace('.', ','); }
+
+// Live hint for an input
+function setupHint(inputId, hintId, defaultHint) {
+  const el = document.getElementById(inputId);
+  const hint = document.getElementById(hintId);
+  if (!el || !hint) return;
+  el.addEventListener('input', () => {
+    const v = parseVN(el.value);
+    if (!el.value.trim()) {
+      el.classList.remove('input-error'); hint.textContent = defaultHint; hint.className = 'input-hint';
+    } else if (isNaN(v)) {
+      el.classList.add('input-error'); hint.textContent = '✕ Định dạng không hợp lệ'; hint.className = 'input-hint error';
+    } else {
+      el.classList.remove('input-error'); hint.textContent = '✓ Đọc được: ' + fmtVN(v); hint.className = 'input-hint ok';
+    }
+  });
+}
+setupHint('current', 'hint-current', 'Dấu chấm = nghìn · Dấu phẩy = thập phân');
+setupHint('prev',    'hint-prev',    'Dùng để tính xu hướng tuần');
+setupHint('low52',   'hint-low52',   'Cho phép số âm: −80.000');
+setupHint('high52',  'hint-high52',  'Phải lớn hơn Net Thấp Nhất');
+
+// ═══════════════════════════════════════════════════
+//  TAB
+// ═══════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+//  HISTORY — with per-row delete
+// ═══════════════════════════════════════════════════
+let history = [];
+try { history = JSON.parse(localStorage.getItem('cot_history') || '[]'); } catch(e) { history = []; }
+
+function saveHistory() { localStorage.setItem('cot_history', JSON.stringify(history)); }
+
+function deleteHistoryRow(idx) {
+  history.splice(idx, 1);
+  saveHistory();
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = '<div class="no-history">Chưa có dữ liệu</div>';
+    return;
+  }
+  el.innerHTML = history.map((h, i) => `
+    <div class="history-item">
+      <span class="h-date">${h.date}</span>
+      <span class="h-pair">${h.pair}</span>
+      <span class="h-index" style="color:${h.color}">${h.idx}</span>
+      <span class="h-badge-wrap">
+        <span style="color:${h.color};background:${h.color}18;border:1px solid ${h.color}33;padding:2px 7px;font-size:9px;letter-spacing:0.08em;border-radius:2px;font-weight:700">${h.label}</span>
+      </span>
+      <button class="h-del" onclick="deleteHistoryRow(${i})" title="Xoá dòng này">×</button>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  if (history.length && !confirm('Xoá toàn bộ lịch sử?')) return;
+  history = [];
+  saveHistory();
+  renderHistory();
+}
+
+// ═══════════════════════════════════════════════════
+//  CALCULATE (Tab 1)
+// ═══════════════════════════════════════════════════
+function calculate() {
+  const pairVal  = document.getElementById('pair').value;
+  const pairText = document.getElementById('pair').selectedOptions[0].text.split('–')[0].trim();
+  const cur  = parseVN(document.getElementById('current').value);
+  const prev = parseVN(document.getElementById('prev').value);
+  const lo   = parseVN(document.getElementById('low52').value);
+  const hi   = parseVN(document.getElementById('high52').value);
+
+  if (isNaN(cur) || isNaN(lo) || isNaN(hi)) {
+    alert('Vui lòng nhập đầy đủ: Net hiện tại, Net thấp nhất, Net cao nhất.\nVí dụ: 45.000 hoặc -80.500');
+    return;
+  }
+  if (hi <= lo) { alert('Net Cao Nhất phải lớn hơn Net Thấp Nhất.'); return; }
+
+  const range = hi - lo;
+  const raw = ((cur - lo) / range) * 100;
+  const idx = Math.min(100, Math.max(0, raw));
+  const z = getZone(idx);
+
+  const card = document.getElementById('resultCard');
+  card.className = 'result-card show';
+  card.style.borderColor = z.color;
+  card.style.background = z.bg;
+
+  document.getElementById('resPair').textContent = pairText;
+  const idxEl = document.getElementById('resIndex');
+  idxEl.textContent = fmtIdx(idx);
+  idxEl.style.color = z.color;
+
+  const badge = document.getElementById('resBadge');
+  badge.textContent = z.label;
+  badge.style.background = z.bg;
+  badge.style.color = z.color;
+  badge.style.border = `1px solid ${z.color}44`;
+
+  document.getElementById('resSignal').textContent = z.signal;
+  document.getElementById('resFormula').innerHTML = `<span>↳ ICT Action:</span> ${z.ictAction}`;
+
+  let prevNote = '';
+  if (!isNaN(prev)) {
+    const delta = cur - prev;
+    const sign = delta >= 0 ? '+' : '';
+    prevNote = ` · Δ tuần: <span style="color:${delta>=0?'var(--green)':'var(--red)'}">${sign}${fmtVN(Math.round(delta))}</span>`;
+  }
+
+  document.getElementById('resCalc').innerHTML =
+    `Formula: (${fmtVN(cur)} − ${fmtVN(lo)}) ÷ (${fmtVN(hi)} − ${fmtVN(lo)}) × 100 = <span style="color:${z.color};font-weight:700">${idx.toFixed(2).replace('.',',')}</span>${prevNote}`;
+
+  setTimeout(() => { document.getElementById('needle').style.left = idx + '%'; }, 50);
+
+  const entry = {
+    pair: pairText, pairVal,
+    idx: fmtIdx(idx), idxNum: idx,
+    label: z.label, color: z.color,
+    cur, prev: isNaN(prev) ? null : prev, lo, hi,
+    date: new Date().toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit'})
+  };
+  history.unshift(entry);
+  if (history.length > 16) history = history.slice(0, 16);
+  saveHistory();
+  renderHistory();
+}
+
+// ═══════════════════════════════════════════════════
+//  MATRIX — entries management
+// ═══════════════════════════════════════════════════
+let matrixEntries = [];
+
+function updateMatrixProgress() {
+  const n = matrixEntries.length;
+  document.getElementById('progressLabel').textContent = `${n} / 8 đồng tiền`;
+  document.getElementById('progressFill').style.width = (n / 8 * 100) + '%';
+  document.getElementById('btnGenMatrix').disabled = n < 2;
+}
+
+function renderMatrixEntries() {
+  const el = document.getElementById('matrixEntries');
+  if (!matrixEntries.length) { el.innerHTML = ''; updateMatrixProgress(); return; }
+  el.innerHTML = matrixEntries.map((e, i) => {
+    const z = getZone(e.idxNum);
+    return `<div class="matrix-entry-row">
+      <span class="entry-pair" style="color:${z.color}">${e.pair}</span>
+      <span class="entry-vals">Net: ${fmtVN(e.cur)} · Lo: ${fmtVN(e.lo)} · Hi: ${fmtVN(e.hi)}${e.prev!==null?' · Prev: '+fmtVN(e.prev):''}</span>
+      <span class="entry-idx" style="color:${z.color}">${fmtIdx(e.idxNum)}</span>
+      <button class="entry-del" onclick="deleteMatrixEntry(${i})" title="Xoá">×</button>
+    </div>`;
+  }).join('');
+  updateMatrixProgress();
+}
+
+function deleteMatrixEntry(i) {
+  matrixEntries.splice(i, 1);
+  renderMatrixEntries();
+}
+
+function addMatrixEntry() {
+  if (matrixEntries.length >= 8) { alert('Tối đa 8 đồng tiền.'); return; }
+  const pair  = document.getElementById('m-pair').value;
+  const cur   = parseVN(document.getElementById('m-cur').value);
+  const prev  = parseVN(document.getElementById('m-prev').value);
+  const lo    = parseVN(document.getElementById('m-lo').value);
+  const hi    = parseVN(document.getElementById('m-hi').value);
+  const t4    = document.getElementById('m-trend4').value;
+
+  if (isNaN(cur) || isNaN(lo) || isNaN(hi)) { alert('Vui lòng nhập đủ Net hiện tại, Net thấp, Net cao.'); return; }
+  if (hi <= lo) { alert('Net Cao Nhất phải lớn hơn Net Thấp Nhất.'); return; }
+  if (matrixEntries.find(e => e.pair === pair)) { alert(`${pair} đã được thêm rồi.`); return; }
+
+  const range = hi - lo;
+  const raw = ((cur - lo) / range) * 100;
+  const idxNum = Math.min(100, Math.max(0, raw));
+
+  matrixEntries.push({ pair, cur, prev: isNaN(prev) ? null : prev, lo, hi, t4, idxNum });
+  renderMatrixEntries();
+
+  // Clear inputs
+  ['m-cur','m-prev','m-lo','m-hi'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('m-trend4').value = '';
+}
+
+// Send history to matrix
+function sendToMatrix() {
+  if (!history.length) { alert('Lịch sử trống.'); return; }
+  // Use the most recent entry per pairVal
+  const seen = new Set();
+  history.forEach(h => {
+    if (!seen.has(h.pairVal) && h.lo !== undefined && h.hi !== undefined) {
+      seen.add(h.pairVal);
+      if (matrixEntries.length < 8 && !matrixEntries.find(e => e.pair === h.pair)) {
+        const range = h.hi - h.lo;
+        const raw = ((h.cur - h.lo) / range) * 100;
+        const idxNum = Math.min(100, Math.max(0, raw));
+        matrixEntries.push({ pair: h.pair, cur: h.cur, prev: h.prev, lo: h.lo, hi: h.hi, t4: '', idxNum });
+      }
+    }
+  });
+  renderMatrixEntries();
+  // Switch to matrix tab
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-matrix').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+//  GENERATE MATRIX
+// ═══════════════════════════════════════════════════
+function generateMatrix() {
+  if (matrixEntries.length < 2) return;
+
+  // Sort by COT Index descending for ranking
+  const sorted = [...matrixEntries].sort((a, b) => b.idxNum - a.idxNum);
+
+  // Fill table
+  const tbody = document.getElementById('matrixBody');
+  tbody.innerHTML = matrixEntries.map(e => {
+    const z = getZone(e.idxNum);
+    const delta = (e.prev !== null && !isNaN(e.prev)) ? e.cur - e.prev : null;
+    const deltaStr = delta !== null
+      ? `<span style="color:${delta>=0?'var(--green)':'var(--red)'}">${delta>=0?'+':''}${fmtVN(Math.round(delta))}</span>`
+      : '<span style="color:var(--muted)">—</span>';
+
+    const trendClass = e.t4.includes('Tăng') ? 'trend-up' : e.t4.includes('Giảm') ? 'trend-dn' : 'trend-flat';
+
+    return `<tr>
+      <td><span class="pair-tag" style="color:${z.color}">${e.pair}</span></td>
+      <td>${fmtVN(e.cur)}</td>
+      <td>${fmtVN(e.lo)}</td>
+      <td>${fmtVN(e.hi)}</td>
+      <td>${e.prev !== null ? fmtVN(e.prev) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${deltaStr}</td>
+      <td><span class="${trendClass}">${e.t4 || '—'}</span></td>
+      <td>
+        <div class="cot-bar-wrap">
+          <div class="cot-bar-track"><div class="cot-bar-fill" style="width:${e.idxNum}%;background:${z.color}"></div></div>
+          <span class="cot-val" style="color:${z.color}">${fmtIdx(e.idxNum)}</span>
+        </div>
+      </td>
+      <td><span style="color:${z.color};font-weight:700;font-size:10px">${z.label}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Ranking
+  const rankEl = document.getElementById('rankingList');
+  rankEl.innerHTML = sorted.map((e, i) => {
+    const z = getZone(e.idxNum);
+    const isStrongest = i === 0;
+    const isWeakest = i === sorted.length - 1;
+    const tag = isStrongest ? ' ← Strongest' : isWeakest ? ' ← Weakest' : '';
+    return `<div class="ranking-item">
+      <span class="rank-num">${i+1}.</span>
+      <span class="rank-pair" style="color:${z.color}">${e.pair}</span>
+      <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${e.idxNum}%;background:${z.color}"></div></div>
+      <span class="rank-idx" style="color:${z.color}">${fmtIdx(e.idxNum)}</span>
+      <span class="rank-label" style="color:${z.color}">${z.label}${tag}</span>
+    </div>`;
+  }).join('');
+
+  // Best Pairs
+  const bulls = sorted.filter(e => e.idxNum >= 60);
+  const bears = sorted.filter(e => e.idxNum <= 40);
+  const neutrals = sorted.filter(e => e.idxNum > 40 && e.idxNum < 60);
+
+  // Long pairs: strongest bull vs weakest bear
+  const longPairs = [];
+  bulls.forEach(b => {
+    bears.slice().reverse().forEach(br => {
+      longPairs.push({ pair: `${b.pair}/${br.pair}`, score: b.idxNum - br.idxNum });
+    });
+  });
+  longPairs.sort((a,b) => b.score - a.score);
+
+  const shortPairs = longPairs.map(p => {
+    const parts = p.pair.split('/');
+    return { pair: `${parts[1]}/${parts[0]}`, score: p.score };
+  });
+
+  const avoidPairs = [];
+  neutrals.forEach((a, i) => neutrals.slice(i+1).forEach(b => avoidPairs.push(`${a.pair}/${b.pair}`)));
+
+  const pairsEl = document.getElementById('pairsGrid');
+  pairsEl.innerHTML = `
+    <div>
+      <div class="pairs-section-label" style="color:var(--green)">↑ LONG (Mạnh/Yếu)</div>
+      ${longPairs.slice(0,5).map(p => `<span class="pair-chip" style="color:var(--green);background:rgba(92,200,160,0.1);border:1px solid rgba(92,200,160,0.2)">${p.pair}</span>`).join('') || '<span style="color:var(--muted);font-size:11px">—</span>'}
+    </div>
+    <div>
+      <div class="pairs-section-label" style="color:var(--red)">↓ SHORT (Yếu/Mạnh)</div>
+      ${shortPairs.slice(0,5).map(p => `<span class="pair-chip" style="color:var(--red);background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.2)">${p.pair}</span>`).join('') || '<span style="color:var(--muted);font-size:11px">—</span>'}
+    </div>
+    <div>
+      <div class="pairs-section-label" style="color:var(--muted)">⚠ TRÁNH (Neutral vs Neutral)</div>
+      ${avoidPairs.slice(0,4).map(p => `<span class="pair-chip" style="color:var(--muted);background:rgba(136,153,187,0.08);border:1px solid rgba(136,153,187,0.15)">${p}</span>`).join('') || '<span style="color:var(--muted);font-size:11px">—</span>'}
+    </div>
+  `;
+
+  // Week label
+  const now = new Date();
+  const weekLabel = _matrixWeekOverride || ('Tuần ' + now.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}));
+  document.getElementById('matrixTitleText').textContent = 'COT MATRIX';
+  document.getElementById('matrixWeekText').textContent = weekLabel;
+
+  // Data source badge
+  const badge = document.getElementById('dataSourceBadge');
+  if (_matrixDataSource === 'auto') {
+    badge.className = 'data-source-badge auto';
+    badge.textContent = '⬡ CFTC Auto · ' + weekLabel;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.className = 'data-source-badge manual';
+    badge.textContent = 'Manual';
+    badge.style.display = 'inline-block';
+  }
+
+  // Store for export
+  _matrixData = { entries: matrixEntries, sorted, longPairs, shortPairs, avoidPairs, weekLabel };
+
+  // Show export panel, default to Markdown
+  switchExportFmt('md');
+  document.getElementById('exportPanel').classList.add('show');
+
+  document.getElementById('matrixOutput').className = 'matrix-container show';
+  document.getElementById('matrixOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════
+let _matrixData = null;
+let _matrixDataSource = 'manual'; // 'manual' | 'auto'
+let _currentFmt = 'md';
+
+function switchExportFmt(fmt) {
+  _currentFmt = fmt;
+  ['md','json','csv','txt'].forEach(f => {
+    document.getElementById('efmt-' + f).classList.toggle('active', f === fmt);
+  });
+  if (!_matrixData) return;
+  const content = buildExport(fmt);
+  document.getElementById('exportTextarea').value = content;
+  const ext = fmt === 'txt' ? 'txt' : fmt === 'json' ? 'json' : fmt === 'csv' ? 'csv' : 'md';
+  const slug = (_matrixData.weekLabel || 'cot').replace(/\s/g,'-').replace(/\//g,'-');
+  document.getElementById('expFilename').textContent = `COT-Matrix-${slug}.${ext}`;
+}
+
+function buildExport(fmt) {
+  const { entries, sorted, longPairs, shortPairs, avoidPairs, weekLabel } = _matrixData;
+
+  if (fmt === 'md') return buildMarkdown(entries, sorted, longPairs, shortPairs, avoidPairs, weekLabel);
+  if (fmt === 'json') return buildJSON(entries, weekLabel);
+  if (fmt === 'csv') return buildCSV(entries, weekLabel);
+  if (fmt === 'txt') return buildSummary(sorted, longPairs, shortPairs, avoidPairs, weekLabel);
+  return '';
+}
+
+// ── Markdown ──
+function buildMarkdown(entries, sorted, longPairs, shortPairs, avoidPairs, weekLabel) {
+  let md = `# COT MATRIX — ${weekLabel}\n`;
+  md += `> Nguồn: CFTC.gov · Phương pháp: ICT · Generated: ${new Date().toLocaleString('vi-VN')}\n\n---\n\n`;
+
+  md += `## COT Matrix\n\n`;
+  md += `| Đồng tiền | Net hiện tại | Net thấp 52T | Net cao 52T | Net tuần trước | Δ Tuần | Xu hướng 4T | COT Index | Đánh giá |\n`;
+  md += `|-----------|-------------:|-------------:|------------:|---------------:|-------:|-------------|----------:|---------|\n`;
+  entries.forEach(e => {
+    const z = getZone(e.idxNum);
+    const delta = e.prev !== null ? e.cur - e.prev : null;
+    const dStr = delta !== null ? (delta >= 0 ? `+${fmtVN(Math.round(delta))}` : fmtVN(Math.round(delta))) : '—';
+    md += `| **${e.pair}** | ${fmtVN(e.cur)} | ${fmtVN(e.lo)} | ${fmtVN(e.hi)} | ${e.prev !== null ? fmtVN(e.prev) : '—'} | ${dStr} | ${e.t4 || '—'} | **${fmtIdx(e.idxNum)}** | ${z.label} |\n`;
+  });
+
+  md += `\n---\n\n## Ranking (Mạnh → Yếu)\n\n`;
+  sorted.forEach((e, i) => {
+    const z = getZone(e.idxNum);
+    const bar = '█'.repeat(Math.round(e.idxNum / 10)) + '░'.repeat(10 - Math.round(e.idxNum / 10));
+    const tag = i === 0 ? ' ← **Strongest**' : i === sorted.length - 1 ? ' ← **Weakest**' : '';
+    md += `${i+1}. **${e.pair}** \`${bar}\` ${fmtIdx(e.idxNum)} — ${z.label}${tag}\n`;
+  });
+
+  md += `\n---\n\n## Best Pairs Theo COT\n\n`;
+  md += `### ↑ LONG\n`;
+  if (longPairs.length) longPairs.slice(0,5).forEach(p => { md += `- \`${p.pair}\`\n`; });
+  else md += `- —\n`;
+  md += `\n### ↓ SHORT\n`;
+  if (shortPairs.length) shortPairs.slice(0,5).forEach(p => { md += `- \`${p.pair}\`\n`; });
+  else md += `- —\n`;
+  md += `\n### ⚠ Tránh\n`;
+  if (avoidPairs.length) avoidPairs.slice(0,4).forEach(p => { md += `- \`${p}\`\n`; });
+  else md += `- —\n`;
+
+  md += `\n---\n\n## Bảng Tham Chiếu\n\n`;
+  md += `| COT Index | Đánh giá | Bias |\n|-----------|----------|------|\n`;
+  md += `| 0–10 | EXTREME BEAR | ⚠ Cẩn thận reversal tăng |\n`;
+  md += `| 10–25 | BEARISH | Short bias – monitor |\n`;
+  md += `| 25–40 | BEARISH MILD | Short bias bình thường |\n`;
+  md += `| 40–60 | NEUTRAL | Cần tín hiệu ICT khác |\n`;
+  md += `| 60–75 | BULLISH MILD | Long bias bình thường |\n`;
+  md += `| 75–90 | BULLISH | Long bias – monitor |\n`;
+  md += `| 90–100 | EXTREME BULL | ⚠ Cẩn thận reversal giảm |\n`;
+  return md;
+}
+
+// ── JSON ──
+function buildJSON(entries, weekLabel) {
+  const data = {
+    meta: { weekLabel, generated: new Date().toISOString(), source: 'CFTC.gov', method: 'ICT COT Index Calculator' },
+    entries: entries.map(e => ({
+      pair: e.pair,
+      cur: e.cur,
+      prev: e.prev,
+      lo: e.lo,
+      hi: e.hi,
+      t4: e.t4 || '',
+      cotIndex: parseFloat(e.idxNum.toFixed(2)),
+      label: getZone(e.idxNum).label
+    }))
+  };
+  return JSON.stringify(data, null, 2);
+}
+
+// ── CSV ──
+function buildCSV(entries, weekLabel) {
+  const header = ['Pair','Net Current','Net Prev','Net Low 52W','Net High 52W','Delta Week','Trend 4W','COT Index','Label'];
+  const rows = entries.map(e => {
+    const delta = e.prev !== null ? e.cur - e.prev : '';
+    return [
+      e.pair, e.cur, e.prev ?? '', e.lo, e.hi,
+      delta !== '' ? Math.round(delta) : '',
+      e.t4 || '',
+      e.idxNum.toFixed(2),
+      getZone(e.idxNum).label
+    ].join(',');
+  });
+  return `# COT Matrix - ${weekLabel}\n` + header.join(',') + '\n' + rows.join('\n');
+}
+
+// ── Text Summary ──
+function buildSummary(sorted, longPairs, shortPairs, avoidPairs, weekLabel) {
+  let t = `COT MATRIX — ${weekLabel}\n`;
+  t += '='.repeat(48) + '\n\n';
+
+  t += 'RANKING (Mạnh → Yếu):\n';
+  sorted.forEach((e, i) => {
+    const z = getZone(e.idxNum);
+    const tag = i === 0 ? ' ← Strongest' : i === sorted.length - 1 ? ' ← Weakest' : '';
+    const bar = '█'.repeat(Math.round(e.idxNum / 10)) + '░'.repeat(10 - Math.round(e.idxNum / 10));
+    t += `  ${i+1}. ${e.pair.padEnd(4)} [${bar}] ${fmtIdx(e.idxNum).padStart(5)}  ${z.label}${tag}\n`;
+  });
+
+  t += '\nBEST PAIRS THEO COT:\n';
+  t += '  ↑ LONG:  ' + (longPairs.slice(0,5).map(p => p.pair).join('  ') || '—') + '\n';
+  t += '  ↓ SHORT: ' + (shortPairs.slice(0,5).map(p => p.pair).join('  ') || '—') + '\n';
+  t += '  ⚠ TRÁNH: ' + (avoidPairs.slice(0,4).join('  ') || '—') + '\n';
+
+  t += '\n' + '-'.repeat(48) + '\n';
+  t += `Generated: ${new Date().toLocaleString('vi-VN')}\n`;
+  t += 'Nguồn: CFTC.gov · ICT COT Index Calculator\n';
+  return t;
+}
+
+// ── Actions ──
+function copyExport() {
+  const txt = document.getElementById('exportTextarea').value;
+  navigator.clipboard.writeText(txt).then(() => showToast('✓ Đã copy!')).catch(() => {
+    document.getElementById('exportTextarea').select();
+    document.execCommand('copy');
+    showToast('✓ Đã copy!');
+  });
+}
+
+function downloadExport() {
+  const txt = document.getElementById('exportTextarea').value;
+  const filename = document.getElementById('expFilename').textContent || 'cot-matrix.md';
+  const mimeMap = { md: 'text/markdown', json: 'application/json', csv: 'text/csv', txt: 'text/plain' };
+  const ext = filename.split('.').pop();
+  const blob = new Blob([txt], { type: (mimeMap[ext] || 'text/plain') + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇ Đang tải về...');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('expToast');
+  t.textContent = msg;
+  t.className = 'exp-toast show' + (type === 'error' ? ' error-toast' : type === 'warn' ? ' warn-toast' : '');
+  setTimeout(() => { t.className = 'exp-toast'; }, 2200);
+}
+
+// ═══════════════════════════════════════════════════
+//  IMPORT
+// ═══════════════════════════════════════════════════
+let _importParsed = []; // array of { pair, cur, prev, lo, hi, t4, idxNum, error }
+
+function openImportModal() {
+  document.getElementById('impOverlay').classList.add('show');
+  clearImportState();
+}
+
+function closeImportModal() {
+  document.getElementById('impOverlay').classList.remove('show');
+}
+
+function switchImpMethod(method) {
+  ['csv','json','md','file'].forEach(m => {
+    document.getElementById('impTab-' + m).classList.toggle('active', m === method);
+    document.getElementById('impPanel-' + m).classList.toggle('active', m === method);
+  });
+  clearImportState();
+}
+
+function clearImportState() {
+  _importParsed = [];
+  document.getElementById('impPreview').classList.remove('show');
+  document.getElementById('impPreviewBody').innerHTML = '';
+  document.getElementById('impPreviewCount').textContent = '';
+  document.getElementById('impFooterInfo').textContent = 'Chưa có dữ liệu để preview';
+  document.getElementById('btnImpLoad').disabled = true;
+}
+
+// ── Shared: render preview table ──
+function renderImportPreview(rows) {
+  _importParsed = rows;
+  const tbody = document.getElementById('impPreviewBody');
+  const wrap = document.getElementById('impPreview');
+
+  if (!rows.length) {
+    wrap.classList.remove('show');
+    tbody.innerHTML = '';
+    document.getElementById('impPreviewCount').textContent = '';
+    document.getElementById('impFooterInfo').textContent = 'Chưa có dữ liệu để preview';
+    document.getElementById('btnImpLoad').disabled = true;
+    return;
+  }
+
+  wrap.classList.add('show');
+
+  const okCount = rows.filter(r => !r.error).length;
+  const errCount = rows.filter(r => r.error).length;
+
+  document.getElementById('impPreviewCount').textContent = `${rows.length} dòng`;
+
+  tbody.innerHTML = rows.map(r => {
+    if (r.error) {
+      return `<tr class="imp-row-error">
+        <td style="font-weight:700">${r.pair || '—'}</td>
+        <td>${r.cur !== undefined && !isNaN(r.cur) ? fmtVN(r.cur) : '—'}</td>
+        <td>${r.prev !== null && r.prev !== undefined && !isNaN(r.prev) ? fmtVN(r.prev) : '—'}</td>
+        <td>${r.lo !== undefined && !isNaN(r.lo) ? fmtVN(r.lo) : '—'}</td>
+        <td>${r.hi !== undefined && !isNaN(r.hi) ? fmtVN(r.hi) : '—'}</td>
+        <td style="color:var(--muted)">${r.t4 || '—'}</td>
+        <td>—</td><td>—</td>
+        <td><span class="imp-err-msg">⚠ ${r.error}</span></td>
+      </tr>`;
+    }
+    const z = getZone(r.idxNum);
+    return `<tr>
+      <td style="font-weight:700;color:${z.color}">${r.pair}</td>
+      <td>${fmtVN(r.cur)}</td>
+      <td>${r.prev !== null ? fmtVN(r.prev) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${fmtVN(r.lo)}</td>
+      <td>${fmtVN(r.hi)}</td>
+      <td style="color:var(--muted)">${r.t4 || '—'}</td>
+      <td><span style="color:${z.color};font-weight:700">${fmtIdx(r.idxNum)}</span></td>
+      <td><span class="imp-status" style="color:${z.color};background:${z.bg}">${z.label}</span></td>
+      <td style="color:var(--green)">✓</td>
+    </tr>`;
+  }).join('');
+
+  let info = '';
+  if (okCount) info += `<span class="imp-ok">${okCount} hợp lệ</span>`;
+  if (okCount && errCount) info += ' · ';
+  if (errCount) info += `<span class="imp-err">${errCount} lỗi</span>`;
+  document.getElementById('impFooterInfo').innerHTML = info;
+  document.getElementById('btnImpLoad').disabled = okCount === 0;
+}
+
+// ── Shared: compute row with validation ──
+function computeImportRow(pair, curRaw, prevRaw, loRaw, hiRaw, t4) {
+  const p = (pair || '').trim().toUpperCase().replace(/[^A-Z]/g, '');
+  const cur = typeof curRaw === 'number' ? curRaw : parseVN(curRaw);
+  const prev = (prevRaw === null || prevRaw === undefined || prevRaw === '')
+    ? null : (typeof prevRaw === 'number' ? prevRaw : parseVN(prevRaw));
+  const lo = typeof loRaw === 'number' ? loRaw : parseVN(loRaw);
+  const hi = typeof hiRaw === 'number' ? hiRaw : parseVN(hiRaw);
+
+  const base = { pair: p || pair, cur, prev: (prev !== null && !isNaN(prev)) ? prev : null, lo, hi, t4: t4 || '' };
+
+  if (!p) return { ...base, error: 'Thiếu Pair' };
+  if (isNaN(cur)) return { ...base, error: 'Net Current không hợp lệ' };
+  if (isNaN(lo)) return { ...base, error: 'Net Low không hợp lệ' };
+  if (isNaN(hi)) return { ...base, error: 'Net High không hợp lệ' };
+  if (hi <= lo) return { ...base, error: 'High phải lớn hơn Low' };
+
+  const range = hi - lo;
+  const raw = ((cur - lo) / range) * 100;
+  const idxNum = Math.min(100, Math.max(0, raw));
+  return { ...base, idxNum, error: null };
+}
+
+// ── ① CSV / Paste parser ──
+function parseImportCSV() {
+  const text = document.getElementById('impCsvText').value.trim();
+  if (!text) { clearImportState(); return; }
+
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  // Auto-detect separator
+  const firstLine = lines[0];
+  let sep = '\t';
+  if (firstLine.includes('\t')) sep = '\t';
+  else if (firstLine.includes(';')) sep = ';';
+  else if (firstLine.includes(',')) sep = ',';
+
+  // Skip header if detected
+  const headerPatterns = /^(pair|đồng|currency|symbol)/i;
+  let dataLines = lines;
+  if (headerPatterns.test(lines[0].split(sep)[0].trim())) {
+    dataLines = lines.slice(1);
+  }
+
+  const rows = dataLines.map(line => {
+    const cols = line.split(sep).map(c => c.trim());
+    if (cols.length < 4) return computeImportRow(cols[0], cols[1], null, cols[2], cols[3], cols[4]);
+    // Pair | Net Current | Net Prev | Net Low | Net High | Trend4W
+    return computeImportRow(cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]);
+  });
+
+  renderImportPreview(rows);
+}
+
+// ── ② JSON parser ──
+function parseImportJSON() {
+  const text = document.getElementById('impJsonText').value.trim();
+  if (!text) { clearImportState(); return; }
+
+  let arr;
+  try {
+    const parsed = JSON.parse(text);
+    // Support { entries: [...] } or [...]
+    if (Array.isArray(parsed)) arr = parsed;
+    else if (parsed && Array.isArray(parsed.entries)) arr = parsed.entries;
+    else { renderImportPreview([{ pair: '—', error: 'JSON phải là array hoặc có field "entries"' }]); return; }
+  } catch (e) {
+    renderImportPreview([{ pair: '—', error: 'JSON không hợp lệ: ' + e.message.slice(0, 60) }]);
+    return;
+  }
+
+  const rows = arr.map(obj => {
+    const pick = (...keys) => {
+      for (const k of keys) {
+        if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+        // Also check case-insensitive
+        const lower = k.toLowerCase();
+        for (const ok of Object.keys(obj)) {
+          if (ok.toLowerCase() === lower) return obj[ok];
+        }
+      }
+      return undefined;
+    };
+
+    const pair = pick('pair', 'currency', 'symbol', 'name') || '';
+    const cur = pick('cur', 'current', 'net', 'netCurrent', 'net_current', 'Net Current');
+    const prev = pick('prev', 'previous', 'netPrev', 'net_prev', 'Net Prev', 'Net Previous');
+    const lo = pick('lo', 'low', 'low52', 'netLow', 'net_low', 'Net Low', 'Net Low 52W');
+    const hi = pick('hi', 'high', 'high52', 'netHigh', 'net_high', 'Net High', 'Net High 52W');
+    const t4 = pick('t4', 'trend', 'trend4w', 'trend_4w', 'Trend 4W') || '';
+
+    return computeImportRow(pair, cur, prev, lo, hi, String(t4));
+  });
+
+  renderImportPreview(rows);
+}
+
+// ── ③ Markdown parser ──
+function parseImportMD() {
+  const text = document.getElementById('impMdText').value.trim();
+  if (!text) { clearImportState(); return; }
+
+  // Find the COT Matrix table (look for table rows with | Pair | data)
+  const lines = text.split(/\r?\n/);
+  const tableRows = [];
+  let inTable = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('|')) { if (inTable) break; continue; }
+
+    // Skip separator rows like |---|---|
+    if (/^\|[\s\-:|]+\|$/.test(trimmed)) { inTable = true; continue; }
+
+    // Skip header rows
+    if (/đồng tiền|pair|currency/i.test(trimmed) && /net|index/i.test(trimmed)) {
+      inTable = true;
+      continue;
+    }
+
+    if (!inTable) {
+      // Could be the first data row without header detection
+      const cells = trimmed.split('|').map(c => c.trim()).filter(c => c);
+      if (cells.length >= 5) {
+        // Check if first cell looks like a pair (3 letters, maybe bold)
+        const pairTest = cells[0].replace(/\*\*/g, '').trim();
+        if (/^[A-Z]{2,5}$/i.test(pairTest)) {
+          inTable = true;
+        }
+      }
+    }
+
+    if (inTable) {
+      const cells = trimmed.split('|').map(c => c.trim()).filter(c => c);
+      if (cells.length >= 5) tableRows.push(cells);
+    }
+  }
+
+  if (!tableRows.length) {
+    renderImportPreview([{ pair: '—', error: 'Không tìm thấy bảng COT Matrix trong Markdown' }]);
+    return;
+  }
+
+  // Parse table rows
+  // Expected columns: Đồng tiền | Net hiện tại | Net thấp 52T | Net cao 52T | Net tuần trước | Δ Tuần | Xu hướng 4T | COT Index | Đánh giá
+  const rows = tableRows.map(cells => {
+    const pair = cells[0].replace(/\*\*/g, '').trim();
+    const cur = cells[1];
+    // Columns 2,3 = lo, hi (matching export format)
+    const lo = cells[2];
+    const hi = cells[3];
+    const prev = cells.length > 4 ? cells[4] : null;
+    // Trend is usually column 6
+    const t4 = cells.length > 6 ? cells[6] : '';
+
+    return computeImportRow(pair, cur, prev === '—' ? null : prev, lo, hi, t4 === '—' ? '' : t4);
+  });
+
+  renderImportPreview(rows);
+}
+
+// ── ④ File upload handler ──
+function handleImportFile(file) {
+  if (!file) return;
+
+  const name = file.name.toLowerCase();
+  const nameEl = document.getElementById('impFileName');
+  nameEl.textContent = `📎 ${file.name}`;
+  nameEl.classList.add('show');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const content = e.target.result;
+
+    // Auto-detect format from extension
+    if (name.endsWith('.json')) {
+      document.getElementById('impJsonText').value = content;
+      switchImpMethod('json');
+      parseImportJSON();
+    } else if (name.endsWith('.md')) {
+      document.getElementById('impMdText').value = content;
+      switchImpMethod('md');
+      parseImportMD();
+    } else {
+      // .csv, .tsv, .txt → treat as CSV
+      document.getElementById('impCsvText').value = content;
+      switchImpMethod('csv');
+      parseImportCSV();
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Load parsed data into matrix ──
+function loadImportToMatrix() {
+  const valid = _importParsed.filter(r => !r.error);
+  if (!valid.length) return;
+
+  // Replace matrix entries with imported data
+  matrixEntries = valid.map(r => ({
+    pair: r.pair,
+    cur: r.cur,
+    prev: r.prev,
+    lo: r.lo,
+    hi: r.hi,
+    t4: r.t4,
+    idxNum: r.idxNum
+  }));
+
+  // Limit to 8
+  if (matrixEntries.length > 8) matrixEntries = matrixEntries.slice(0, 8);
+
+  renderMatrixEntries();
+  closeImportModal();
+  showToast(`✓ Đã nạp ${matrixEntries.length} đồng tiền vào Matrix`);
+}
+
+// ═══════════════════════════════════════════════════
+//  GITHUB CONFIG + AUTO-FETCH
+// ═══════════════════════════════════════════════════
+let _matrixWeekOverride = null; // set by auto-fetch, used by generateMatrix
+
+// ── GitHub Config: Save / Edit / Init ──
+function saveGhConfig() {
+  const user = document.getElementById('ghUsername').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  if (!user || !repo) { alert('Vui lòng nhập cả Username và Tên Repo.'); return; }
+  if (!/^[a-zA-Z0-9_.-]+$/.test(user) || !/^[a-zA-Z0-9_.-]+$/.test(repo)) {
+    alert('Username hoặc Repo chứa ký tự không hợp lệ.\nChỉ cho phép: a-z, 0-9, dấu chấm, gạch dưới, gạch ngang.');
+    return;
+  }
+  localStorage.setItem('gh_username', user);
+  localStorage.setItem('gh_repo', repo);
+  showToast('✓ Đã lưu cấu hình GitHub');
+  renderGhConfigCollapsed(user, repo);
+  enableFetchButton();
+}
+
+function editGhConfig() {
+  const card = document.getElementById('ghConfigCard');
+  card.classList.remove('collapsed');
+  const body = document.getElementById('ghConfigBody');
+  body.classList.remove('hidden');
+  // Restore form inputs
+  body.innerHTML = `
+    <div class="gh-config-row">
+      <div class="field">
+        <label>GitHub Username</label>
+        <input type="text" id="ghUsername" placeholder="your-username" autocomplete="off"
+          value="${localStorage.getItem('gh_username') || ''}" />
+      </div>
+      <div class="field">
+        <label>Tên Repo</label>
+        <input type="text" id="ghRepo" placeholder="cot-data" autocomplete="off"
+          value="${localStorage.getItem('gh_repo') || ''}" />
+      </div>
+      <button class="btn-gh-save" onclick="saveGhConfig()">Lưu</button>
+    </div>`;
+  document.getElementById('ghHeaderRight').innerHTML = '';
+}
+
+function renderGhConfigCollapsed(user, repo) {
+  const card = document.getElementById('ghConfigCard');
+  card.classList.add('collapsed');
+  const body = document.getElementById('ghConfigBody');
+  body.classList.add('hidden');
+  document.getElementById('ghHeaderRight').innerHTML = `
+    <div class="gh-status-row">
+      <span class="gh-status-text">
+        <a class="gh-repo-link" href="https://github.com/${user}/${repo}" target="_blank" rel="noopener">${user}/${repo}</a>
+      </span>
+      <button class="btn-gh-edit" onclick="editGhConfig()">✎ Sửa</button>
+    </div>`;
+}
+
+function enableFetchButton() {
+  const btn = document.getElementById('btnFetchCftc');
+  btn.disabled = false;
+  btn.title = '';
+  // Check if cache exists for current week → show "Làm mới" label
+  const cached = loadCftcCache();
+  if (cached) {
+    btn.innerHTML = '⬡ Làm Mới Dữ Liệu CFTC';
+  } else {
+    btn.innerHTML = '⬡ Lấy Dữ Liệu CFTC';
+  }
+}
+
+function initGhConfig() {
+  const user = localStorage.getItem('gh_username');
+  const repo = localStorage.getItem('gh_repo');
+  if (user && repo) {
+    renderGhConfigCollapsed(user, repo);
+    enableFetchButton();
+    document.getElementById('ghUsername').value = user;
+    document.getElementById('ghRepo').value = repo;
+  }
+}
+
+// ── Cache ──
+function saveCftcCache(payload) {
+  const cacheObj = {
+    timestamp: new Date().toISOString(),
+    data: payload
+  };
+  localStorage.setItem('cftc_cache', JSON.stringify(cacheObj));
+}
+
+function loadCftcCache() {
+  try {
+    const raw = localStorage.getItem('cftc_cache');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function renderCacheInfo() {
+  const el = document.getElementById('fetchCacheInfo');
+  const cached = loadCftcCache();
+  if (!cached) { el.innerHTML = ''; return; }
+
+  const ts = new Date(cached.timestamp);
+  const meta = cached.data && cached.data.meta;
+  const weekLabel = meta ? meta.weekLabel : '?';
+  const dateStr = ts.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'});
+  const timeStr = ts.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+
+  el.innerHTML = `<span class="cache-label">Cache:</span> Dữ liệu tuần <strong>${weekLabel}</strong> — cache từ ${dateStr} lúc ${timeStr}`;
+}
+
+// ── Fetch from GitHub ──
+async function fetchCftcFromGitHub() {
+  const user = localStorage.getItem('gh_username');
+  const repo = localStorage.getItem('gh_repo');
+  if (!user || !repo) { showToast('⚠ Chưa cấu hình GitHub', 'warn'); return; }
+
+  const btn = document.getElementById('btnFetchCftc');
+  const statusEl = document.getElementById('fetchStatus');
+
+  // Loading state
+  btn.className = 'btn-fetch-cftc loading';
+  btn.innerHTML = '<span class="fetch-spinner"></span> Đang tải...';
+  btn.disabled = true;
+  statusEl.textContent = '';
+  statusEl.className = 'fetch-status';
+
+  const url = `https://raw.githubusercontent.com/${user}/${repo}/main/data/cot-latest.json`;
+
+  try {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      // ── Case: 404 ──
+      if (res.status === 404) {
+        btn.className = 'btn-fetch-cftc error';
+        btn.innerHTML = '✕ Không tìm thấy file';
+        statusEl.innerHTML = '404 — File <code>data/cot-latest.json</code> chưa tồn tại.<br>GitHub Actions có thể chưa chạy lần đầu, hoặc file path khác.';
+        statusEl.className = 'fetch-status error';
+        resetFetchBtnAfter(4000);
+        return;
+      }
+
+      // ── Case: 403 (private repo) ──
+      if (res.status === 403) {
+        btn.className = 'btn-fetch-cftc error';
+        btn.innerHTML = '✕ Repo Private';
+        statusEl.innerHTML = '403 — Repo có thể là private.<br>Hãy đổi repo sang <strong>public</strong> hoặc kiểm tra lại tên repo.';
+        statusEl.className = 'fetch-status error';
+        resetFetchBtnAfter(4000);
+        return;
+      }
+
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const text = await res.text();
+    let payload;
+    try {
+      payload = JSON.parse(text);
+    } catch(e) {
+      // ── Case: JSON sai format ──
+      btn.className = 'btn-fetch-cftc error';
+      btn.innerHTML = '✕ JSON lỗi format';
+      statusEl.innerHTML = `File JSON không parse được: ${e.message.slice(0,80)}<br><a href="https://github.com/${user}/${repo}/blob/main/scripts/fetch_cot.py" target="_blank" style="color:var(--accent)">Xem script fetch_cot.py →</a>`;
+      statusEl.className = 'fetch-status error';
+      resetFetchBtnAfter(4000);
+      return;
+    }
+
+    // Validate structure
+    if (!payload.entries || !Array.isArray(payload.entries) || payload.entries.length === 0) {
+      btn.className = 'btn-fetch-cftc error';
+      btn.innerHTML = '✕ Dữ liệu rỗng';
+      statusEl.innerHTML = 'JSON có format đúng nhưng thiếu <code>entries</code> hoặc entries rỗng.';
+      statusEl.className = 'fetch-status error';
+      resetFetchBtnAfter(4000);
+      return;
+    }
+
+    // Validate required fields in entries
+    const requiredFields = ['pair', 'cur', 'lo', 'hi'];
+    const missingFields = [];
+    for (const entry of payload.entries) {
+      for (const f of requiredFields) {
+        if (entry[f] === undefined || entry[f] === null) {
+          missingFields.push(`${entry.pair || '?'}: thiếu '${f}'`);
+        }
+      }
+    }
+    if (missingFields.length > 0) {
+      btn.className = 'btn-fetch-cftc error';
+      btn.innerHTML = '✕ Field thiếu';
+      statusEl.innerHTML = `Các field bắt buộc bị thiếu:<br>${missingFields.slice(0,5).join('<br>')}<br><a href="https://github.com/${user}/${repo}/blob/main/scripts/fetch_cot.py" target="_blank" style="color:var(--accent)">Kiểm tra script →</a>`;
+      statusEl.className = 'fetch-status error';
+      resetFetchBtnAfter(4000);
+      return;
+    }
+
+    // ── Case: Stale data (> 10 days old) ──
+    if (payload.meta && payload.meta.fetchedAt) {
+      const fetchedDate = new Date(payload.meta.fetchedAt);
+      const daysDiff = (Date.now() - fetchedDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysDiff > 10) {
+        statusEl.innerHTML = `⚠ Dữ liệu đã cũ (${Math.floor(daysDiff)} ngày trước). Có thể GitHub Actions đã không chạy gần đây.`;
+        statusEl.className = 'fetch-status warn';
+      }
+    }
+
+    // ── Success → populate matrix ──
+    saveCftcCache(payload);
+    renderCacheInfo();
+
+    // Convert entries to matrixEntries format
+    matrixEntries = payload.entries.slice(0, 8).map(e => {
+      const cur = typeof e.cur === 'number' ? e.cur : parseVN(e.cur);
+      const prev = (e.prev !== null && e.prev !== undefined) ? (typeof e.prev === 'number' ? e.prev : parseVN(e.prev)) : null;
+      const lo = typeof e.lo === 'number' ? e.lo : parseVN(e.lo);
+      const hi = typeof e.hi === 'number' ? e.hi : parseVN(e.hi);
+      const range = hi - lo;
+      const idxNum = range > 0 ? Math.min(100, Math.max(0, ((cur - lo) / range) * 100)) : 50;
+      return {
+        pair: e.pair,
+        cur, prev: (prev !== null && !isNaN(prev)) ? prev : null,
+        lo, hi,
+        t4: e.t4 || '',
+        idxNum: e.idxNum !== undefined ? e.idxNum : idxNum
+      };
+    });
+
+    renderMatrixEntries();
+
+    // Set data source info
+    _matrixDataSource = 'auto';
+    const weekLabel = payload.meta ? payload.meta.weekLabel : '';
+    _matrixWeekOverride = weekLabel ? `Tuần ${weekLabel}` : null;
+
+    // Auto-generate matrix
+    generateMatrix();
+
+    // Success state
+    btn.className = 'btn-fetch-cftc success';
+    btn.innerHTML = '✓ Đã tải xong!';
+    const entryCount = payload.entries.length;
+    if (!statusEl.textContent.includes('⚠')) {
+      statusEl.textContent = `Thành công — ${entryCount} đồng tiền từ ${weekLabel || 'CFTC'}`;
+    }
+    showToast(`✓ Đã tải ${entryCount} đồng tiền từ CFTC`);
+
+    resetFetchBtnAfter(3000);
+
+  } catch(err) {
+    // ── Case: Network offline / other errors ──
+    btn.className = 'btn-fetch-cftc error';
+    btn.innerHTML = '✕ Lỗi kết nối';
+
+    const cached = loadCftcCache();
+    if (cached && cached.data && cached.data.entries) {
+      statusEl.innerHTML = `Không thể kết nối: ${err.message}.<br>` +
+        `<button class="btn-gh-edit" onclick="loadFromCache()" style="margin-top:6px">↻ Dùng cache lần trước</button>`;
+    } else {
+      statusEl.innerHTML = `Không thể kết nối: ${err.message}.<br>Kiểm tra kết nối mạng và thử lại.`;
+    }
+    statusEl.className = 'fetch-status error';
+    resetFetchBtnAfter(4000);
+  }
+}
+
+function loadFromCache() {
+  const cached = loadCftcCache();
+  if (!cached || !cached.data || !cached.data.entries) {
+    showToast('⚠ Không có cache', 'warn');
+    return;
+  }
+
+  const payload = cached.data;
+  matrixEntries = payload.entries.slice(0, 8).map(e => {
+    const cur = typeof e.cur === 'number' ? e.cur : parseVN(e.cur);
+    const prev = (e.prev !== null && e.prev !== undefined) ? (typeof e.prev === 'number' ? e.prev : parseVN(e.prev)) : null;
+    const lo = typeof e.lo === 'number' ? e.lo : parseVN(e.lo);
+    const hi = typeof e.hi === 'number' ? e.hi : parseVN(e.hi);
+    return {
+      pair: e.pair, cur, prev: (prev !== null && !isNaN(prev)) ? prev : null,
+      lo, hi, t4: e.t4 || '',
+      idxNum: e.idxNum !== undefined ? e.idxNum : 50
+    };
+  });
+
+  renderMatrixEntries();
+  _matrixDataSource = 'auto';
+  const weekLabel = payload.meta ? payload.meta.weekLabel : '';
+  _matrixWeekOverride = weekLabel ? `Tuần ${weekLabel}` : null;
+  generateMatrix();
+
+  document.getElementById('fetchStatus').textContent = `Đã load từ cache — ${weekLabel}`;
+  document.getElementById('fetchStatus').className = 'fetch-status';
+  showToast(`✓ Đã load ${matrixEntries.length} đồng tiền từ cache`);
+}
+
+function resetFetchBtnAfter(ms) {
+  setTimeout(() => {
+    const btn = document.getElementById('btnFetchCftc');
+    btn.className = 'btn-fetch-cftc';
+    btn.disabled = false;
+    const cached = loadCftcCache();
+    btn.innerHTML = cached ? '⬡ Làm Mới Dữ Liệu CFTC' : '⬡ Lấy Dữ Liệu CFTC';
+  }, ms);
+}
+
+
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+renderHistory();
+updateMatrixProgress();
+initGhConfig();
+renderCacheInfo();
+
+// When user manually adds entry, mark source as manual
+const _origAddMatrixEntry = addMatrixEntry;
+addMatrixEntry = function() {
+  _matrixDataSource = 'manual';
+  _matrixWeekOverride = null;
+  _origAddMatrixEntry();
+};
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.closest('#tab-calc')) calculate();
+});
+</script>
+</body>
+</html>
