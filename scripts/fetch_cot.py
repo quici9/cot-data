@@ -60,6 +60,13 @@ def net_position(row):
     except (ValueError, TypeError):
         return None
 
+def open_interest(row):
+    """Total Open Interest"""
+    try:
+        return int(row.get("open_interest_all", 0))
+    except (ValueError, TypeError):
+        return None
+
 def cot_index(current, low_52, high_52):
     """Normalize về 0–100"""
     rng = high_52 - low_52
@@ -175,6 +182,7 @@ def process(raw_data):
         grouped[symbol].append({
             "date": row["report_date_as_yyyy_mm_dd"],
             "net":  net,
+            "oi":   open_interest(row),
             "week": get_iso_week_label(row["report_date_as_yyyy_mm_dd"])
         })
     
@@ -230,16 +238,38 @@ def process(raw_data):
             elif pct > -15: trend_4w = "Giảm"
             else:           trend_4w = "Giảm mạnh"
         
+        # Momentum: prev_delta = delta of previous week
+        prev_delta = nets[1] - nets[2] if len(records) >= 3 else None
+
+        # Open Interest
+        oi_cur  = records[0].get("oi")
+        oi_prev = records[1].get("oi") if len(records) >= 2 else None
+        oi_delta = (oi_cur - oi_prev) if (oi_cur is not None and oi_prev is not None) else None
+
+        # 4-week history
+        history_4w = nets[:4] if len(records) >= 4 else nets[:len(records)]
+
+        # Historical averages
+        avg_13w = round(sum(nets[:13]) / min(13, len(nets))) if len(nets) >= 4 else None
+        avg_26w = round(sum(nets[:26]) / min(26, len(nets))) if len(nets) >= 8 else None
+
         entries.append({
-            "pair":     symbol,
-            "cur":      current,
-            "prev":     prev,
-            "lo":       low_52,
-            "hi":       high_52,
-            "t4":       trend_4w,
-            "idxNum":   idx,
-            "label":    cot_label(idx),
-            "delta":    delta,
+            "pair":       symbol,
+            "cur":        current,
+            "prev":       prev,
+            "lo":         low_52,
+            "hi":         high_52,
+            "t4":         trend_4w,
+            "idxNum":     idx,
+            "label":      cot_label(idx),
+            "delta":      delta,
+            "prev_delta": prev_delta,
+            "oi":         oi_cur,
+            "oi_prev":    oi_prev,
+            "oi_delta":   oi_delta,
+            "history_4w": history_4w,
+            "avg_13w":    avg_13w,
+            "avg_26w":    avg_26w,
             "reportDate": records[0]["date"],
             "weekLabel":  records[0]["week"],
         })

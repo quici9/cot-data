@@ -374,6 +374,118 @@
   .exp-toast.error-toast { background: var(--red); }
   .exp-toast.warn-toast { background: var(--yellow); color: #0a0c0f; }
 
+  /* ── MOMENTUM / CHANGE % ─────────────────────────── */
+  .momentum-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 2px; white-space: nowrap;
+  }
+  .momentum-tag.accel { color: var(--green); background: rgba(92,200,160,0.1); }
+  .momentum-tag.decel { color: var(--yellow); background: rgba(224,192,92,0.1); }
+  .momentum-tag.stable { color: var(--muted); background: rgba(136,153,187,0.06); }
+  .change-pct { font-size: 12px; font-weight: 700; }
+
+  /* ── OI CONFLUENCE BADGE ─────────────────────────── */
+  .oi-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 2px; white-space: nowrap;
+  }
+  .oi-badge.strong { color: #0a0c0f; background: var(--green); }
+  .oi-badge.reversal { color: #0a0c0f; background: var(--yellow); }
+  .oi-badge.weak { color: var(--muted); background: rgba(136,153,187,0.12); border: 1px solid var(--border); }
+
+  /* ── 4-WEEK HISTORY ──────────────────────────────── */
+  .history4w-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 16px; }
+  .history4w-header {
+    padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    transition: color 0.15s; user-select: none;
+  }
+  .history4w-header:hover { color: var(--text); }
+  .history4w-header .toggle-arrow { transition: transform 0.2s; }
+  .history4w-header.open .toggle-arrow { transform: rotate(90deg); }
+  .history4w-body { display: none; padding: 0 18px 16px; }
+  .history4w-body.open { display: block; }
+  .h4w-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .h4w-item {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 12px;
+  }
+  .h4w-pair { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .h4w-row { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 0; }
+  .h4w-label { color: var(--muted); width: 50px; flex-shrink: 0; font-size: 11px; }
+  .h4w-val { font-weight: 700; width: 70px; flex-shrink: 0; text-align: right; }
+  .h4w-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .h4w-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .h4w-avg { font-size: 11px; color: var(--muted); border-top: 1px dashed var(--border); margin-top: 6px; padding-top: 6px; }
+  .h4w-avg-val { font-weight: 700; }
+  .h4w-avg-diff { font-size: 10px; font-weight: 700; padding: 1px 4px; border-radius: 2px; }
+
+  /* ── SIGNALS / DIVERGENCE ────────────────────────── */
+  .signals-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 18px; margin-bottom: 16px; }
+  .signals-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .signal-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .signal-item:last-child { border-bottom: none; }
+  .signal-icon { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
+  .signal-type { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 2px 6px; border-radius: 2px; background: rgba(136,153,187,0.08); flex-shrink: 0; }
+  .signal-detail { color: var(--text); line-height: 1.5; }
+  .signal-pair { font-weight: 700; }
+  .no-signals { color: var(--muted); font-size: 13px; font-style: italic; }
+  .signals-manual { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .signals-manual label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; margin-bottom: 8px; }
+  .signals-manual input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+  .signals-manual textarea {
+    width: 100%; min-height: 40px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 2px; color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 12px; padding: 8px 10px; resize: vertical; outline: none; margin-top: 6px;
+  }
+  .signals-manual textarea:focus { border-color: var(--accent); }
+
+  /* ── PAIR STRENGTH MATRIX 8×8 ────────────────────── */
+  .psgrid-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 18px; margin-bottom: 16px; }
+  .psgrid-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .psgrid-wrap { overflow-x: auto; }
+  .psgrid-table { border-collapse: collapse; }
+  .psgrid-table th, .psgrid-table td { width: 48px; height: 38px; text-align: center; font-size: 11px; font-weight: 700; border: 1px solid var(--border); }
+  .psgrid-table th { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; background: var(--bg); position: sticky; }
+  .psgrid-table th:first-child { left: 0; z-index: 2; }
+  .psgrid-table thead th { top: 0; z-index: 1; }
+  .psgrid-table td { cursor: default; transition: transform 0.1s; position: relative; }
+  .psgrid-table td:hover { transform: scale(1.15); z-index: 5; box-shadow: 0 0 10px rgba(200,169,110,0.3); }
+  .psgrid-table td.diag { background: var(--bg); cursor: default; }
+  .psgrid-table td.diag:hover { transform: none; box-shadow: none; }
+  .psgrid-legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .psgrid-legend-item { display: flex; align-items: center; gap: 4px; }
+  .psgrid-legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* ── ACTION PLAN ─────────────────────────────────── */
+  .actionplan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 18px; margin-bottom: 16px; }
+  .actionplan-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .ap-pairs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (max-width: 600px) { .ap-pairs-grid { grid-template-columns: 1fr; } }
+  .ap-pair-row {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 12px;
+  }
+  .ap-pair-label { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .ap-pair-row select, .ap-pair-row input[type="text"] {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+    color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px;
+    padding: 6px 8px; outline: none; margin-top: 4px;
+  }
+  .ap-pair-row select:focus, .ap-pair-row input[type="text"]:focus { border-color: var(--accent); }
+  .ap-row-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; margin-top: 8px; }
+  .ap-notes-wrap { margin-top: 14px; }
+  .ap-notes-wrap textarea {
+    width: 100%; min-height: 60px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 2px; color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 12px; padding: 10px 12px; resize: vertical; outline: none;
+  }
+  .ap-notes-wrap textarea:focus { border-color: var(--accent); }
+  .ap-saved-hint { font-size: 11px; color: var(--green); margin-top: 6px; opacity: 0; transition: opacity 0.3s; }
+  .ap-saved-hint.show { opacity: 1; }
+
   /* ── IMPORT MODAL ─────────────────────────────────── */
   .imp-overlay {
     position: fixed; inset: 0; z-index: 900;
@@ -859,7 +971,10 @@ GBP	30000	25000	-50000	90000	Giảm
                 <th>Net cao 52T</th>
                 <th>Net tuần trước</th>
                 <th>Δ Tuần</th>
+                <th>Δ %</th>
+                <th>Momentum</th>
                 <th>Xu hướng 4T</th>
+                <th>OI</th>
                 <th>COT Index</th>
                 <th>Đánh giá</th>
               </tr>
@@ -879,6 +994,49 @@ GBP	30000	25000	-50000	90000	Giảm
       <div class="pairs-card">
         <div class="pairs-title">⊕ Best Pairs Theo COT</div>
         <div class="pairs-grid" id="pairsGrid"></div>
+      </div>
+
+      <!-- 4-Week History (collapsible) -->
+      <div class="history4w-card" id="history4wCard" style="display:none">
+        <div class="history4w-header" id="history4wHeader" onclick="toggle4wHistory()">
+          <span class="toggle-arrow">▸</span> Lịch Sử 4 Tuần &amp; So Sánh Trung Bình
+        </div>
+        <div class="history4w-body" id="history4wBody"></div>
+      </div>
+
+      <!-- Pair Strength Matrix 8x8 -->
+      <div class="psgrid-card" id="psgridCard" style="display:none">
+        <div class="psgrid-title">◫ Ma Trận Sức Mạnh Cặp Tiền</div>
+        <div class="psgrid-wrap" id="psgridWrap"></div>
+        <div class="psgrid-legend">
+          <div class="psgrid-legend-item"><div class="psgrid-legend-dot" style="background:var(--green)"></div> Long mạnh</div>
+          <div class="psgrid-legend-item"><div class="psgrid-legend-dot" style="background:rgba(92,200,160,0.4)"></div> Long nhẹ</div>
+          <div class="psgrid-legend-item"><div class="psgrid-legend-dot" style="background:var(--border)"></div> Trung tính</div>
+          <div class="psgrid-legend-item"><div class="psgrid-legend-dot" style="background:rgba(224,92,92,0.4)"></div> Short nhẹ</div>
+          <div class="psgrid-legend-item"><div class="psgrid-legend-dot" style="background:var(--red)"></div> Short mạnh</div>
+        </div>
+      </div>
+
+      <!-- Signals / Divergence Checklist -->
+      <div class="signals-card" id="signalsCard" style="display:none">
+        <div class="signals-title">⚡ Tín Hiệu Đặc Biệt</div>
+        <div id="signalsAutoList"></div>
+        <div class="signals-manual">
+          <label><input type="checkbox" id="sigDivergence"> Phát hiện Divergence COT vs Price</label>
+          <label><input type="checkbox" id="sigOther"> Tín hiệu khác cần lưu ý</label>
+          <textarea id="sigNotes" placeholder="Ghi chú tín hiệu thủ công..."></textarea>
+        </div>
+      </div>
+
+      <!-- Action Plan -->
+      <div class="actionplan-card" id="actionplanCard" style="display:none">
+        <div class="actionplan-title">📋 Kế Hoạch Tuần Này</div>
+        <div class="ap-pairs-grid" id="apPairsGrid"></div>
+        <div class="ap-notes-wrap">
+          <div class="ap-row-label">GHI CHÚ TỔNG</div>
+          <textarea id="apNotes" placeholder="Ghi chú chiến lược tuần này..." oninput="saveActionPlan()"></textarea>
+        </div>
+        <div class="ap-saved-hint" id="apSavedHint">✓ Đã lưu tự động</div>
       </div>
 
       <!-- Export Panel -->
@@ -1254,16 +1412,53 @@ function generateMatrix() {
   // Sort by COT Index descending for ranking
   const sorted = [...matrixEntries].sort((a, b) => b.idxNum - a.idxNum);
 
-  // Fill table
+  // ── #1: Fill table with new columns ──
   const tbody = document.getElementById('matrixBody');
   tbody.innerHTML = matrixEntries.map(e => {
     const z = getZone(e.idxNum);
-    const delta = (e.prev !== null && !isNaN(e.prev)) ? e.cur - e.prev : null;
+    const delta = e.delta !== undefined ? e.delta : ((e.prev !== null && !isNaN(e.prev)) ? e.cur - e.prev : null);
     const deltaStr = delta !== null
       ? `<span style="color:${delta>=0?'var(--green)':'var(--red)'}">${delta>=0?'+':''}${fmtVN(Math.round(delta))}</span>`
       : '<span style="color:var(--muted)">—</span>';
 
-    const trendClass = e.t4.includes('Tăng') ? 'trend-up' : e.t4.includes('Giảm') ? 'trend-dn' : 'trend-flat';
+    // Change %
+    const changePct = (delta !== null && e.prev !== null && e.prev !== 0) ? (delta / Math.abs(e.prev) * 100) : null;
+    const changePctStr = changePct !== null
+      ? `<span class="change-pct" style="color:${changePct>=0?'var(--green)':'var(--red)'}">${changePct>=0?'+':''}${changePct.toFixed(1)}%</span>`
+      : '<span style="color:var(--muted)">—</span>';
+
+    // Momentum
+    const prevDelta = e.prev_delta !== undefined ? e.prev_delta : null;
+    let momentumStr = '<span style="color:var(--muted)">—</span>';
+    if (delta !== null && prevDelta !== null) {
+      const absCur = Math.abs(delta), absPrev = Math.abs(prevDelta);
+      if (absCur > absPrev * 1.2) momentumStr = '<span class="momentum-tag accel">▲ Tăng tốc</span>';
+      else if (absCur < absPrev * 0.8) momentumStr = '<span class="momentum-tag decel">▽ Giảm tốc</span>';
+      else momentumStr = '<span class="momentum-tag stable">— Ổn định</span>';
+    }
+
+    const trendClass = (e.t4||'').includes('Tăng') ? 'trend-up' : (e.t4||'').includes('Giảm') ? 'trend-dn' : 'trend-flat';
+
+    // OI with confluence badge
+    const oi = (e.oi !== undefined && e.oi !== null) ? e.oi : null;
+    const oiDelta = (e.oi_delta !== undefined && e.oi_delta !== null) ? e.oi_delta : null;
+    let oiStr = '<span style="color:var(--muted)">—</span>';
+    if (oi !== null) {
+      let oiDeltaStr = '';
+      if (oiDelta !== null) {
+        const oiDColor = oiDelta >= 0 ? 'var(--green)' : 'var(--red)';
+        const oiDSign = oiDelta >= 0 ? '+' : '';
+        oiDeltaStr = ' <span style="color:' + oiDColor + ';font-size:10px">' + oiDSign + fmtVN(oiDelta) + '</span>';
+      }
+      let badge = '';
+      if (oiDelta !== null && delta !== null) {
+        const deltaAligned = (oiDelta > 0) && ((delta > 0 && e.cur > 0) || (delta < 0 && e.cur < 0));
+        if (deltaAligned) badge = '<span class="oi-badge strong">STRONG</span>';
+        else if (oiDelta > 0) badge = '<span class="oi-badge reversal">REVERSAL?</span>';
+        else badge = '<span class="oi-badge weak">WEAK</span>';
+      }
+      oiStr = fmtVN(oi) + oiDeltaStr + (badge ? '<br>' + badge : '');
+    }
 
     return `<tr>
       <td><span class="pair-tag" style="color:${z.color}">${e.pair}</span></td>
@@ -1272,7 +1467,10 @@ function generateMatrix() {
       <td>${fmtVN(e.hi)}</td>
       <td>${e.prev !== null ? fmtVN(e.prev) : '<span style="color:var(--muted)">—</span>'}</td>
       <td>${deltaStr}</td>
+      <td>${changePctStr}</td>
+      <td>${momentumStr}</td>
       <td><span class="${trendClass}">${e.t4 || '—'}</span></td>
+      <td style="font-size:11px;line-height:1.5">${oiStr}</td>
       <td>
         <div class="cot-bar-wrap">
           <div class="cot-bar-track"><div class="cot-bar-fill" style="width:${e.idxNum}%;background:${z.color}"></div></div>
@@ -1283,7 +1481,7 @@ function generateMatrix() {
     </tr>`;
   }).join('');
 
-  // Ranking
+  // ── Ranking ──
   const rankEl = document.getElementById('rankingList');
   rankEl.innerHTML = sorted.map((e, i) => {
     const z = getZone(e.idxNum);
@@ -1299,12 +1497,11 @@ function generateMatrix() {
     </div>`;
   }).join('');
 
-  // Best Pairs
+  // ── Best Pairs ──
   const bulls = sorted.filter(e => e.idxNum >= 60);
   const bears = sorted.filter(e => e.idxNum <= 40);
   const neutrals = sorted.filter(e => e.idxNum > 40 && e.idxNum < 60);
 
-  // Long pairs: strongest bull vs weakest bear
   const longPairs = [];
   bulls.forEach(b => {
     bears.slice().reverse().forEach(br => {
@@ -1337,6 +1534,18 @@ function generateMatrix() {
     </div>
   `;
 
+  // ── #3: 4-Week History ──
+  render4wHistory(matrixEntries, sorted);
+
+  // ── #5: Pair Strength Matrix 8×8 ──
+  renderPairStrengthGrid(sorted);
+
+  // ── #4: Signals ──
+  renderSignals(matrixEntries);
+
+  // ── #6: Action Plan ──
+  renderActionPlan(longPairs, shortPairs);
+
   // Week label
   const now = new Date();
   const weekLabel = _matrixWeekOverride || ('Tuần ' + now.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}));
@@ -1364,6 +1573,228 @@ function generateMatrix() {
 
   document.getElementById('matrixOutput').className = 'matrix-container show';
   document.getElementById('matrixOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════════════
+//  4-WEEK HISTORY SECTION
+// ═══════════════════════════════════════════════════
+function toggle4wHistory() {
+  const header = document.getElementById('history4wHeader');
+  const body = document.getElementById('history4wBody');
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+function render4wHistory(entries, sorted) {
+  const hasHistory = entries.some(e => e.history_4w && e.history_4w.length >= 2);
+  const card = document.getElementById('history4wCard');
+  if (!hasHistory) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const body = document.getElementById('history4wBody');
+  body.innerHTML = '<div class="h4w-grid">' + sorted.map(e => {
+    const z = getZone(e.idxNum);
+    const hist = e.history_4w || [e.cur];
+    const allVals = hist.concat(e.avg_13w || 0, e.avg_26w || 0);
+    const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+    const range = maxV - minV || 1;
+    const barPct = v => Math.max(2, ((v - minV) / range) * 100);
+    const weekLabels = ['Hiện tại', 'W-1', 'W-2', 'W-3'];
+
+    let html = `<div class="h4w-item">
+      <div class="h4w-pair" style="color:${z.color}">${e.pair} <span style="color:${z.color};font-size:10px;opacity:0.7">${z.label}</span></div>`;
+
+    hist.forEach((v, i) => {
+      const c = i === 0 ? z.color : 'var(--muted)';
+      html += `<div class="h4w-row">
+        <span class="h4w-label">${weekLabels[i] || 'W-'+i}</span>
+        <span class="h4w-val" style="color:${c}">${fmtVN(v)}</span>
+        <div class="h4w-bar"><div class="h4w-bar-fill" style="width:${barPct(v)}%;background:${c}"></div></div>
+      </div>`;
+    });
+
+    // Averages
+    if (e.avg_13w !== undefined && e.avg_13w !== null) {
+      const diff13 = e.cur - e.avg_13w;
+      const diffColor = Math.abs(diff13) > Math.abs(e.avg_13w * 0.15) ? (diff13 > 0 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
+      html += `<div class="h4w-avg">TB 3 tháng: <span class="h4w-avg-val">${fmtVN(e.avg_13w)}</span>
+        <span class="h4w-avg-diff" style="color:${diffColor}">${diff13>=0?'+':''}${fmtVN(diff13)}</span></div>`;
+    }
+    if (e.avg_26w !== undefined && e.avg_26w !== null) {
+      const diff26 = e.cur - e.avg_26w;
+      const diffColor = Math.abs(diff26) > Math.abs(e.avg_26w * 0.15) ? (diff26 > 0 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
+      html += `<div class="h4w-avg">TB 6 tháng: <span class="h4w-avg-val">${fmtVN(e.avg_26w)}</span>
+        <span class="h4w-avg-diff" style="color:${diffColor}">${diff26>=0?'+':''}${fmtVN(diff26)}</span></div>`;
+    }
+
+    html += '</div>';
+    return html;
+  }).join('') + '</div>';
+}
+
+// ═══════════════════════════════════════════════════
+//  PAIR STRENGTH MATRIX 8×8
+// ═══════════════════════════════════════════════════
+function renderPairStrengthGrid(sorted) {
+  const card = document.getElementById('psgridCard');
+  if (sorted.length < 3) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const n = sorted.length;
+  let html = '<table class="psgrid-table"><thead><tr><th></th>';
+  sorted.forEach(e => { html += `<th>${e.pair}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  sorted.forEach((row, ri) => {
+    html += `<tr><th>${row.pair}</th>`;
+    sorted.forEach((col, ci) => {
+      if (ri === ci) { html += '<td class="diag">—</td>'; return; }
+      const spread = row.idxNum - col.idxNum;
+      const abs = Math.abs(spread);
+      let bg, fg;
+      if (spread > 40) { bg = 'var(--green)'; fg = '#0a0c0f'; }
+      else if (spread > 20) { bg = 'rgba(92,200,160,0.4)'; fg = 'var(--green)'; }
+      else if (spread > -20) { bg = 'var(--border)'; fg = 'var(--muted)'; }
+      else if (spread > -40) { bg = 'rgba(224,92,92,0.4)'; fg = 'var(--red)'; }
+      else { bg = 'var(--red)'; fg = '#0a0c0f'; }
+      html += `<td style="background:${bg};color:${fg}" title="${row.pair}/${col.pair}: ${spread>=0?'+':''}${spread.toFixed(0)}">${spread>=0?'+':''}${spread.toFixed(0)}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('psgridWrap').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  SIGNALS / DIVERGENCE
+// ═══════════════════════════════════════════════════
+function renderSignals(entries) {
+  const card = document.getElementById('signalsCard');
+  card.style.display = '';
+
+  const signals = [];
+
+  entries.forEach(e => {
+    const z = getZone(e.idxNum);
+
+    // Flip detection
+    if (e.prev !== null && e.prev !== undefined) {
+      if ((e.prev > 0 && e.cur < 0) || (e.prev < 0 && e.cur > 0)) {
+        const dir = e.cur > 0 ? 'Short → Long' : 'Long → Short';
+        signals.push({ icon: '🔄', type: 'FLIP', detail: `<span class="signal-pair" style="color:${z.color}">${e.pair}</span> — ${dir}. Net chuyển từ ${fmtVN(e.prev)} sang ${fmtVN(e.cur)}`, priority: 3 });
+      }
+    }
+
+    // Extreme detection
+    if (e.idxNum < 10) {
+      signals.push({ icon: '⚠️', type: 'EXTREME BEAR', detail: `<span class="signal-pair" style="color:${z.color}">${e.pair}</span> — COT Index ${fmtIdx(e.idxNum)}. Cẩn thận reversal tăng.`, priority: 2 });
+    } else if (e.idxNum > 90) {
+      signals.push({ icon: '⚠️', type: 'EXTREME BULL', detail: `<span class="signal-pair" style="color:${z.color}">${e.pair}</span> — COT Index ${fmtIdx(e.idxNum)}. Cẩn thận reversal giảm.`, priority: 2 });
+    }
+
+    // Strong momentum detection
+    const delta = e.delta !== undefined ? e.delta : ((e.prev !== null) ? e.cur - e.prev : null);
+    const prevDelta = e.prev_delta !== undefined ? e.prev_delta : null;
+    if (delta !== null && prevDelta !== null && Math.abs(delta) > Math.abs(prevDelta) * 1.8) {
+      signals.push({ icon: '📈', type: 'MOMENTUM', detail: `<span class="signal-pair" style="color:${z.color}">${e.pair}</span> — Tăng tốc mạnh. Δ tuần: ${fmtVN(delta)} vs tuần trước: ${fmtVN(prevDelta)}`, priority: 1 });
+    }
+  });
+
+  signals.sort((a, b) => b.priority - a.priority);
+
+  const listEl = document.getElementById('signalsAutoList');
+  if (signals.length === 0) {
+    listEl.innerHTML = '<div class="no-signals">Không có tín hiệu đặc biệt tuần này. Thị trường tương đối ổn định.</div>';
+  } else {
+    listEl.innerHTML = signals.map(s => `
+      <div class="signal-item">
+        <span class="signal-icon">${s.icon}</span>
+        <span class="signal-type">${s.type}</span>
+        <span class="signal-detail">${s.detail}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  ACTION PLAN
+// ═══════════════════════════════════════════════════
+let _apSaveTimer = null;
+
+function renderActionPlan(longPairs, shortPairs) {
+  const card = document.getElementById('actionplanCard');
+  card.style.display = '';
+
+  const topLong = longPairs.slice(0, 2);
+  const topShort = shortPairs.slice(0, 2);
+  const pairs = [...topLong.map(p => ({ pair: p.pair, bias: 'Long' })), ...topShort.map(p => ({ pair: p.pair, bias: 'Short' }))];
+  if (pairs.length === 0) pairs.push({ pair: 'EUR/USD', bias: 'Neutral' });
+
+  // Load saved plan
+  const weekLabel = _matrixWeekOverride || '';
+  const saved = loadActionPlan(weekLabel);
+
+  const grid = document.getElementById('apPairsGrid');
+  grid.innerHTML = pairs.map((p, i) => {
+    const savedPair = saved && saved.pairs && saved.pairs[i] ? saved.pairs[i] : {};
+    return `<div class="ap-pair-row">
+      <div class="ap-pair-label">${p.pair}</div>
+      <div class="ap-row-label">BIAS</div>
+      <select id="apBias${i}" onchange="saveActionPlan()">
+        <option value="Long" ${(savedPair.bias || p.bias)==='Long'?'selected':''}>Long</option>
+        <option value="Short" ${(savedPair.bias || p.bias)==='Short'?'selected':''}>Short</option>
+        <option value="Neutral" ${(savedPair.bias || p.bias)==='Neutral'?'selected':''}>Neutral</option>
+      </select>
+      <div class="ap-row-label">CONFIDENCE</div>
+      <select id="apConf${i}" onchange="saveActionPlan()">
+        <option value="Cao" ${(savedPair.conf)==='Cao'?'selected':''}>Cao</option>
+        <option value="TB" ${(!savedPair.conf || savedPair.conf==='TB')?'selected':''}>Trung bình</option>
+        <option value="Thấp" ${(savedPair.conf)==='Thấp'?'selected':''}>Thấp</option>
+      </select>
+      <div class="ap-row-label">VÙNG GIÁ CHỜ</div>
+      <input type="text" id="apZone${i}" placeholder="Ví dụ: 1.0800 – 1.0850" value="${savedPair.zone || ''}" oninput="saveActionPlan()">
+    </div>`;
+  }).join('');
+
+  // Restore notes
+  document.getElementById('apNotes').value = (saved && saved.notes) || '';
+
+  // Store pair count for saving
+  document.getElementById('actionplanCard').dataset.pairCount = pairs.length;
+  document.getElementById('actionplanCard').dataset.pairs = JSON.stringify(pairs.map(p => p.pair));
+}
+
+function saveActionPlan() {
+  clearTimeout(_apSaveTimer);
+  _apSaveTimer = setTimeout(() => {
+    const weekLabel = _matrixWeekOverride || '';
+    const pairCount = parseInt(document.getElementById('actionplanCard').dataset.pairCount || '0');
+    const pairNames = JSON.parse(document.getElementById('actionplanCard').dataset.pairs || '[]');
+    const pairs = [];
+    for (let i = 0; i < pairCount; i++) {
+      pairs.push({
+        pair: pairNames[i] || '',
+        bias: (document.getElementById('apBias'+i) || {}).value || 'Neutral',
+        conf: (document.getElementById('apConf'+i) || {}).value || 'TB',
+        zone: (document.getElementById('apZone'+i) || {}).value || ''
+      });
+    }
+    const plan = {
+      pairs,
+      notes: document.getElementById('apNotes').value,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('cot_actionplan_' + weekLabel, JSON.stringify(plan));
+    const hint = document.getElementById('apSavedHint');
+    hint.classList.add('show');
+    setTimeout(() => hint.classList.remove('show'), 2000);
+  }, 500);
+}
+
+function loadActionPlan(weekLabel) {
+  try { return JSON.parse(localStorage.getItem('cot_actionplan_' + weekLabel) || 'null'); }
+  catch(e) { return null; }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1396,19 +1827,56 @@ function buildExport(fmt) {
   return '';
 }
 
+// ── Shared: build signals for export (plain text, no HTML) ──
+function buildSignalsForExport(entries) {
+  const signals = [];
+  entries.forEach(e => {
+    const z = getZone(e.idxNum);
+    // Flip detection
+    if (e.prev !== null && e.prev !== undefined) {
+      if ((e.prev > 0 && e.cur < 0) || (e.prev < 0 && e.cur > 0)) {
+        const dir = e.cur > 0 ? 'Short → Long' : 'Long → Short';
+        signals.push({ icon: '🔄', type: 'FLIP', plainDetail: `${e.pair} — ${dir}. Net chuyển từ ${fmtVN(e.prev)} sang ${fmtVN(e.cur)}`, priority: 3 });
+      }
+    }
+    // Extreme detection
+    if (e.idxNum < 10) {
+      signals.push({ icon: '⚠️', type: 'EXTREME BEAR', plainDetail: `${e.pair} — COT Index ${fmtIdx(e.idxNum)}. Cẩn thận reversal tăng.`, priority: 2 });
+    } else if (e.idxNum > 90) {
+      signals.push({ icon: '⚠️', type: 'EXTREME BULL', plainDetail: `${e.pair} — COT Index ${fmtIdx(e.idxNum)}. Cẩn thận reversal giảm.`, priority: 2 });
+    }
+    // Strong momentum detection
+    const delta = e.delta !== undefined ? e.delta : ((e.prev !== null) ? e.cur - e.prev : null);
+    const prevDelta = e.prev_delta !== undefined ? e.prev_delta : null;
+    if (delta !== null && prevDelta !== null && Math.abs(delta) > Math.abs(prevDelta) * 1.8) {
+      signals.push({ icon: '📈', type: 'MOMENTUM', plainDetail: `${e.pair} — Tăng tốc mạnh. Δ tuần: ${fmtVN(delta)} vs tuần trước: ${fmtVN(prevDelta)}`, priority: 1 });
+    }
+  });
+  signals.sort((a, b) => b.priority - a.priority);
+  return signals;
+}
+
 // ── Markdown ──
 function buildMarkdown(entries, sorted, longPairs, shortPairs, avoidPairs, weekLabel) {
   let md = `# COT MATRIX — ${weekLabel}\n`;
   md += `> Nguồn: CFTC.gov · Phương pháp: ICT · Generated: ${new Date().toLocaleString('vi-VN')}\n\n---\n\n`;
 
   md += `## COT Matrix\n\n`;
-  md += `| Đồng tiền | Net hiện tại | Net thấp 52T | Net cao 52T | Net tuần trước | Δ Tuần | Xu hướng 4T | COT Index | Đánh giá |\n`;
-  md += `|-----------|-------------:|-------------:|------------:|---------------:|-------:|-------------|----------:|---------|\n`;
+  md += `| Đồng tiền | Net hiện tại | Net thấp 52T | Net cao 52T | Net tuần trước | Δ Tuần | Change % | Momentum | Xu hướng 4T | COT Index | Đánh giá |\n`;
+  md += `|-----------|-------------:|-------------:|------------:|---------------:|-------:|---------:|----------|-------------|----------:|---------|\n`;
   entries.forEach(e => {
     const z = getZone(e.idxNum);
-    const delta = e.prev !== null ? e.cur - e.prev : null;
+    const delta = e.delta !== undefined ? e.delta : (e.prev !== null ? e.cur - e.prev : null);
     const dStr = delta !== null ? (delta >= 0 ? `+${fmtVN(Math.round(delta))}` : fmtVN(Math.round(delta))) : '—';
-    md += `| **${e.pair}** | ${fmtVN(e.cur)} | ${fmtVN(e.lo)} | ${fmtVN(e.hi)} | ${e.prev !== null ? fmtVN(e.prev) : '—'} | ${dStr} | ${e.t4 || '—'} | **${fmtIdx(e.idxNum)}** | ${z.label} |\n`;
+    const changePct = (delta !== null && e.prev !== null && e.prev !== 0) ? (delta / Math.abs(e.prev) * 100).toFixed(1) + '%' : '—';
+    let momentum = '—';
+    if (e.prev_delta !== undefined && e.prev_delta !== null && delta !== null) {
+      const absCur = Math.abs(delta), absPrev = Math.abs(e.prev_delta);
+      if (absCur > absPrev * 1.2) momentum = '▲ Tăng tốc';
+      else if (absCur < absPrev * 0.8) momentum = '▽ Giảm tốc';
+      else momentum = '— Ổn định';
+    }
+    md += `| **${e.pair}** | ${fmtVN(e.cur)} | ${fmtVN(e.lo)} | ${fmtVN(e.hi)} | ${e.prev !== null ? fmtVN(e.prev) : '—'} | ${dStr} | ${changePct} | ${momentum} | ${e.t4 || '—'} | **${fmtIdx(e.idxNum)}** | ${z.label} |\n`;
   });
 
   md += `\n---\n\n## Ranking (Mạnh → Yếu)\n\n`;
@@ -1418,6 +1886,46 @@ function buildMarkdown(entries, sorted, longPairs, shortPairs, avoidPairs, weekL
     const tag = i === 0 ? ' ← **Strongest**' : i === sorted.length - 1 ? ' ← **Weakest**' : '';
     md += `${i+1}. **${e.pair}** \`${bar}\` ${fmtIdx(e.idxNum)} — ${z.label}${tag}\n`;
   });
+
+  // 4-Week History section
+  const hasHistory = entries.some(e => e.history_4w && e.history_4w.length >= 2);
+  if (hasHistory) {
+    md += `\n---\n\n## Lịch Sử 4 Tuần\n\n`;
+    md += `| Đồng tiền | W-3 | W-2 | W-1 | Hiện tại | TB 3 tháng | Δ vs TB3 | TB 6 tháng | Δ vs TB6 |\n`;
+    md += `|-----------|----:|----:|----:|---------:|-----------:|---------:|-----------:|---------:|\n`;
+    sorted.forEach(e => {
+      const hist = e.history_4w || [e.cur];
+      const w3 = hist[3] !== undefined ? fmtVN(hist[3]) : '—';
+      const w2 = hist[2] !== undefined ? fmtVN(hist[2]) : '—';
+      const w1 = hist[1] !== undefined ? fmtVN(hist[1]) : '—';
+      const w0 = fmtVN(hist[0]);
+      const avg13 = e.avg_13w != null ? fmtVN(e.avg_13w) : '—';
+      const avg26 = e.avg_26w != null ? fmtVN(e.avg_26w) : '—';
+      const d13 = e.avg_13w != null ? ((e.cur - e.avg_13w) >= 0 ? '+' : '') + fmtVN(e.cur - e.avg_13w) : '—';
+      const d26 = e.avg_26w != null ? ((e.cur - e.avg_26w) >= 0 ? '+' : '') + fmtVN(e.cur - e.avg_26w) : '—';
+      md += `| **${e.pair}** | ${w3} | ${w2} | ${w1} | ${w0} | ${avg13} | ${d13} | ${avg26} | ${d26} |\n`;
+    });
+  }
+
+  // OI section (if data available)
+  const hasOI = entries.some(e => e.oi != null);
+  if (hasOI) {
+    md += `\n---\n\n## Open Interest\n\n`;
+    md += `| Đồng tiền | OI | Δ OI | Confluence |\n`;
+    md += `|-----------|---:|-----:|------------|\n`;
+    entries.forEach(e => {
+      const oi = e.oi != null ? fmtVN(e.oi) : '—';
+      const oiD = e.oi_delta != null ? ((e.oi_delta >= 0 ? '+' : '') + fmtVN(e.oi_delta)) : '—';
+      let conf = '—';
+      if (e.oi != null && e.oi_delta != null) {
+        const delta = e.delta !== undefined ? e.delta : (e.prev !== null ? e.cur - e.prev : 0);
+        if (e.oi_delta > 0 && delta > 0) conf = '🟢 STRONG';
+        else if (e.oi_delta > 0 && delta < 0) conf = '🟡 REVERSAL?';
+        else if (e.oi_delta <= 0) conf = '⚪ WEAK';
+      }
+      md += `| **${e.pair}** | ${oi} | ${oiD} | ${conf} |\n`;
+    });
+  }
 
   md += `\n---\n\n## Best Pairs Theo COT\n\n`;
   md += `### ↑ LONG\n`;
@@ -1429,6 +1937,27 @@ function buildMarkdown(entries, sorted, longPairs, shortPairs, avoidPairs, weekL
   md += `\n### ⚠ Tránh\n`;
   if (avoidPairs.length) avoidPairs.slice(0,4).forEach(p => { md += `- \`${p}\`\n`; });
   else md += `- —\n`;
+
+  // Signals section
+  const signals = buildSignalsForExport(entries);
+  md += `\n---\n\n## Tín Hiệu Đặc Biệt\n\n`;
+  if (signals.length === 0) {
+    md += `Không có tín hiệu đặc biệt tuần này.\n`;
+  } else {
+    signals.forEach(s => { md += `- ${s.icon} **${s.type}**: ${s.plainDetail}\n`; });
+  }
+
+  // Action Plan section
+  const savedPlan = loadActionPlan(weekLabel);
+  if (savedPlan && savedPlan.pairs && savedPlan.pairs.length > 0) {
+    md += `\n---\n\n## Kế Hoạch Tuần Này\n\n`;
+    savedPlan.pairs.forEach(p => {
+      md += `- **${p.pair}** — Bias: ${p.bias || 'Neutral'}, Confidence: ${p.conf || 'TB'}${p.zone ? ', Vùng giá: ' + p.zone : ''}\n`;
+    });
+    if (savedPlan.notes) {
+      md += `\n**Ghi chú:**\n${savedPlan.notes}\n`;
+    }
+  }
 
   md += `\n---\n\n## Bảng Tham Chiếu\n\n`;
   md += `| COT Index | Đánh giá | Bias |\n|-----------|----------|------|\n`;
@@ -1454,7 +1983,11 @@ function buildJSON(entries, weekLabel) {
       hi: e.hi,
       t4: e.t4 || '',
       cotIndex: parseFloat(e.idxNum.toFixed(2)),
-      label: getZone(e.idxNum).label
+      label: getZone(e.idxNum).label,
+      delta: e.delta, prev_delta: e.prev_delta,
+      oi: e.oi, oi_delta: e.oi_delta,
+      history_4w: e.history_4w,
+      avg_13w: e.avg_13w, avg_26w: e.avg_26w
     }))
   };
   return JSON.stringify(data, null, 2);
@@ -1462,13 +1995,25 @@ function buildJSON(entries, weekLabel) {
 
 // ── CSV ──
 function buildCSV(entries, weekLabel) {
-  const header = ['Pair','Net Current','Net Prev','Net Low 52W','Net High 52W','Delta Week','Trend 4W','COT Index','Label'];
+  const header = ['Pair','Net Current','Net Prev','Net Low 52W','Net High 52W','Delta Week','Change%','Momentum','Trend 4W','OI','OI Delta','COT Index','Label'];
   const rows = entries.map(e => {
-    const delta = e.prev !== null ? e.cur - e.prev : '';
+    const delta = e.delta !== undefined ? e.delta : (e.prev !== null ? e.cur - e.prev : '');
+    const changePct = (delta !== '' && e.prev !== null && e.prev !== 0) ? (delta / Math.abs(e.prev) * 100).toFixed(1) : '';
+    let momentum = '';
+    if (e.prev_delta !== undefined && e.prev_delta !== null && delta !== '') {
+      const absCur = Math.abs(delta), absPrev = Math.abs(e.prev_delta);
+      if (absCur > absPrev * 1.2) momentum = 'Tăng tốc';
+      else if (absCur < absPrev * 0.8) momentum = 'Giảm tốc';
+      else momentum = 'Ổn định';
+    }
     return [
       e.pair, e.cur, e.prev ?? '', e.lo, e.hi,
       delta !== '' ? Math.round(delta) : '',
+      changePct,
+      momentum,
       e.t4 || '',
+      e.oi != null ? e.oi : '',
+      e.oi_delta != null ? e.oi_delta : '',
       e.idxNum.toFixed(2),
       getZone(e.idxNum).label
     ].join(',');
@@ -1493,6 +2038,29 @@ function buildSummary(sorted, longPairs, shortPairs, avoidPairs, weekLabel) {
   t += '  ↑ LONG:  ' + (longPairs.slice(0,5).map(p => p.pair).join('  ') || '—') + '\n';
   t += '  ↓ SHORT: ' + (shortPairs.slice(0,5).map(p => p.pair).join('  ') || '—') + '\n';
   t += '  ⚠ TRÁNH: ' + (avoidPairs.slice(0,4).join('  ') || '—') + '\n';
+
+  // Signals block
+  const signals = buildSignalsForExport(sorted);
+  t += '\n' + '-'.repeat(48) + '\n';
+  t += 'TÍN HIỆU ĐẶC BIỆT:\n';
+  if (signals.length === 0) {
+    t += '  Không có tín hiệu đặc biệt tuần này.\n';
+  } else {
+    signals.forEach(s => { t += `  ${s.icon} ${s.type}: ${s.plainDetail}\n`; });
+  }
+
+  // Action Plan block
+  const savedPlan = loadActionPlan(weekLabel);
+  if (savedPlan && savedPlan.pairs && savedPlan.pairs.length > 0) {
+    t += '\n' + '-'.repeat(48) + '\n';
+    t += 'KẾ HOẠCH TUẦN NÀY:\n';
+    savedPlan.pairs.forEach(p => {
+      t += `  ${p.pair} — Bias: ${p.bias || 'Neutral'}, Confidence: ${p.conf || 'TB'}${p.zone ? ', Vùng giá: ' + p.zone : ''}\n`;
+    });
+    if (savedPlan.notes) {
+      t += `  Ghi chú: ${savedPlan.notes}\n`;
+    }
+  }
 
   t += '\n' + '-'.repeat(48) + '\n';
   t += `Generated: ${new Date().toLocaleString('vi-VN')}\n`;
@@ -2062,7 +2630,10 @@ async function fetchCftcFromGitHub() {
         cur, prev: (prev !== null && !isNaN(prev)) ? prev : null,
         lo, hi,
         t4: e.t4 || '',
-        idxNum: e.idxNum !== undefined ? e.idxNum : idxNum
+        idxNum: e.idxNum !== undefined ? e.idxNum : idxNum,
+        delta: e.delta, prev_delta: e.prev_delta,
+        oi: e.oi, oi_prev: e.oi_prev, oi_delta: e.oi_delta,
+        history_4w: e.history_4w, avg_13w: e.avg_13w, avg_26w: e.avg_26w
       };
     });
 
@@ -2120,7 +2691,10 @@ function loadFromCache() {
     return {
       pair: e.pair, cur, prev: (prev !== null && !isNaN(prev)) ? prev : null,
       lo, hi, t4: e.t4 || '',
-      idxNum: e.idxNum !== undefined ? e.idxNum : 50
+      idxNum: e.idxNum !== undefined ? e.idxNum : 50,
+      delta: e.delta, prev_delta: e.prev_delta,
+      oi: e.oi, oi_prev: e.oi_prev, oi_delta: e.oi_delta,
+      history_4w: e.history_4w, avg_13w: e.avg_13w, avg_26w: e.avg_26w
     };
   });
 
