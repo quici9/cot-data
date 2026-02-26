@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Trade Journal</title>
+<meta name="description" content="NEXUS Trade Journal — Nhật ký giao dịch ICT với KPI dashboard, ICT Setup Checklist, và phân tích tâm lý.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+/* ── Journal-specific styles ── */
+/* Uses design system tokens: --bg-primary, --bg-surface, --bg-elevated,
+   --border, --border-bright, --text-primary, --text-secondary, --text-muted,
+   --accent, --bull, --bear, --warn, --neutral, --font-display, --font-mono, --font-body */
+
+/* ── Header ── */
+.journal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.journal-header h1 {
+  font-family: var(--font-display); font-size: 28px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--text-primary);
+}
+.journal-header h1 span { color: var(--accent); }
+
+/* ── KPI Row — extends nx-kpi-row ── */
+.kpi-sub {
+  font-size: 11px; color: var(--text-muted); margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+/* ── Filters ── */
+.filter-row {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+}
+.filter-row select, .filter-row input {
+  background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 12px; padding: 8px 10px;
+  border-radius: var(--r-sm); outline: none; transition: border-color 0.2s;
+}
+.filter-row select:focus, .filter-row input:focus { border-color: var(--accent); }
+.filter-count { font-size: 11px; color: var(--text-muted); margin-left: auto; font-family: var(--font-mono); }
+
+/* ── Trade Cards ── */
+.trades-list { display: flex; flex-direction: column; gap: 10px; }
+.trade-card {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 16px 20px; cursor: pointer; transition: all 0.2s; position: relative;
+  border-left: 3px solid var(--border);
+}
+.trade-card:hover { border-color: var(--border-bright); box-shadow: var(--shadow-card); transform: translateY(-1px); }
+.trade-card.win { border-left-color: var(--bull); }
+.trade-card.loss { border-left-color: var(--bear); }
+.trade-card.open { border-left-color: var(--accent); }
+.trade-card.be { border-left-color: var(--text-muted); }
+
+.tc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.tc-pair { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--text-primary); }
+.tc-bias {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 8px;
+  border-radius: var(--r-sm); text-transform: uppercase;
+}
+.tc-bias.long { background: var(--bull-dim); color: var(--bull); }
+.tc-bias.short { background: var(--bear-dim); color: var(--bear); }
+.tc-date { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.tc-session { font-size: 10px; color: var(--text-muted); letter-spacing: 0.06em; }
+.tc-rr {
+  font-family: var(--font-mono); font-weight: 700; font-size: 16px;
+  margin-left: auto;
+}
+.tc-rr.pos { color: var(--bull); }
+.tc-rr.neg { color: var(--bear); }
+.tc-rr.neutral { color: var(--text-muted); }
+
+.tc-body { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+.tc-body span { display: flex; align-items: center; gap: 4px; }
+.tc-compliance {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.tc-compliance.high { color: var(--bull); }
+.tc-compliance.mid { color: var(--accent); }
+.tc-compliance.low { color: var(--bear); }
+
+/* ── Modal — uses design system tokens ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82);
+  z-index: 1000; justify-content: center; align-items: flex-start;
+  padding: 40px 16px; overflow-y: auto;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg-surface); border: 1px solid var(--border-bright); border-radius: var(--r-lg);
+  width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-modal);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.modal-close {
+  background: none; border: none; color: var(--text-muted); font-size: 22px;
+  cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm);
+  transition: color 0.15s, background 0.15s;
+}
+.modal-close:hover { color: var(--text-primary); background: var(--bg-hover); }
+.modal-body { padding: 20px; }
+.modal-footer {
+  display: flex; gap: 8px; justify-content: flex-end;
+  padding: 16px 20px; border-top: 1px solid var(--border);
+}
+
+/* ── Form ── */
+.form-section {
+  margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
+.form-section:last-child { border-bottom: none; margin-bottom: 0; }
+.form-section-title {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-field.full { grid-column: 1 / -1; }
+.form-field label {
+  font-size: 11px; color: var(--text-secondary); letter-spacing: 0.04em;
+}
+.form-field input, .form-field select, .form-field textarea {
+  background: var(--bg-primary); border: 1px solid var(--border-bright); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 13px; padding: 8px 10px;
+  border-radius: var(--r-sm); outline: none; transition: border-color 0.2s;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+  border-color: var(--accent);
+}
+.form-field textarea { min-height: 60px; resize: vertical; }
+
+/* Checklist */
+.checklist { display: flex; flex-direction: column; gap: 6px; }
+.checklist label {
+  display: flex; align-items: center; gap: 8px; font-size: 13px;
+  color: var(--text-primary); cursor: pointer; padding: 4px 0;
+}
+.checklist input[type="checkbox"] {
+  accent-color: var(--accent); width: 16px; height: 16px;
+}
+
+/* Mood buttons */
+.mood-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.mood-btn {
+  background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 6px 14px; border-radius: var(--r-sm); font-size: 12px; cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.mood-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.mood-btn.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* Buttons — aligned with design system */
+.btn-delete {
+  background: none; border: 1px solid var(--bear); color: var(--bear);
+  padding: 8px 16px; border-radius: var(--r-sm); font-size: 12px;
+  font-family: var(--font-mono); cursor: pointer; transition: all 0.2s;
+}
+.btn-delete:hover { background: var(--bear-dim); }
+
+.btn-save {
+  background: var(--accent); color: var(--bg-primary); border: none; border-radius: var(--r-sm);
+  padding: 10px 20px; font-family: var(--font-display); font-size: 13px;
+  font-weight: 700; letter-spacing: 0.06em; cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn-save:hover { opacity: 0.88; }
+.btn-save:active { transform: scale(0.98); }
+
+.btn-cancel {
+  background: none; border: 1px solid var(--border-bright); color: var(--text-secondary);
+  padding: 8px 16px; border-radius: var(--r-sm); font-size: 12px;
+  font-family: var(--font-mono); cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-state p { font-size: 14px; margin-bottom: 16px; }
+
+/* Auto-fill badge — aligned with nx-badge-accent */
+.autofill-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--accent); background: var(--accent-dim);
+  padding: 2px 8px; border-radius: var(--r-sm); letter-spacing: 0.04em;
+  border: 1px solid rgba(200,169,110,0.2);
+}
+
+@media (max-width: 600px) {
+  .form-grid, .form-grid.cols-3 { grid-template-columns: 1fr; }
+  .journal-header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="nx-app">
+  <div class="nx-main">
+    <div class="nx-content">
+
+  <div class="journal-header">
+    <h1><a href="../" style="color:inherit;text-decoration:none">NEXUS</a> · Trade <span>Journal</span></h1>
+    <button class="nx-btn nx-btn-primary" onclick="openTradeModal()">+ New Trade</button>
+  </div>
+
+  <!-- KPI Row — uses nx-kpi-row from design system -->
+  <div class="nx-kpi-row" id="kpiRow">
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiWinRate">—</div>
+      <div class="nx-kpi-label">Win Rate</div>
+      <div class="kpi-sub" id="kpiWinSub"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiAvgRR">—</div>
+      <div class="nx-kpi-label">Avg R:R</div>
+      <div class="kpi-sub" id="kpiRRSub"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiTotal">0</div>
+      <div class="nx-kpi-label">Total Trades</div>
+      <div class="kpi-sub" id="kpiTotalSub"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiNetR">0</div>
+      <div class="nx-kpi-label">Net R</div>
+      <div class="kpi-sub" id="kpiNetSub"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiCompliance">—</div>
+      <div class="nx-kpi-label">Compliance</div>
+      <div class="kpi-sub" id="kpiCompSub"></div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-row">
+    <select id="filterPair" onchange="renderTrades()">
+      <option value="">Tất cả pairs</option>
+    </select>
+    <select id="filterSession" onchange="renderTrades()">
+      <option value="">Tất cả sessions</option>
+      <option value="Asian">Asian</option>
+      <option value="London">London</option>
+      <option value="NY">NY</option>
+      <option value="Late NY">Late NY</option>
+    </select>
+    <select id="filterResult" onchange="renderTrades()">
+      <option value="">Tất cả kết quả</option>
+      <option value="win">Win</option>
+      <option value="loss">Loss</option>
+      <option value="be">Break Even</option>
+      <option value="open">Open</option>
+    </select>
+    <select id="filterMood" onchange="renderTrades()">
+      <option value="">Tất cả tâm lý</option>
+      <option value="Confident">Confident</option>
+      <option value="Calm">Calm</option>
+      <option value="Neutral">Neutral</option>
+      <option value="Anxious">Anxious</option>
+      <option value="FOMO">FOMO</option>
+      <option value="Revenge">Revenge</option>
+    </select>
+    <span class="filter-count" id="filterCount"></span>
+  </div>
+
+  <!-- Trades List -->
+  <div class="trades-list" id="tradesList"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NEW/EDIT TRADE MODAL ═══ -->
+<div class="modal-overlay" id="tradeModal" onclick="if(event.target===this)closeTradeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">New Trade</span>
+      <button class="modal-close" onclick="closeTradeModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Section 1: Context -->
+      <div class="form-section">
+        <div class="form-section-title">① Context</div>
+        <div id="contextAutoFill"></div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Pair</label>
+            <select id="fPair">
+              <option value="EUR/USD">EUR/USD</option>
+              <option value="GBP/USD">GBP/USD</option>
+              <option value="USD/JPY">USD/JPY</option>
+              <option value="AUD/USD">AUD/USD</option>
+              <option value="USD/CAD">USD/CAD</option>
+              <option value="NZD/USD">NZD/USD</option>
+              <option value="USD/CHF">USD/CHF</option>
+              <option value="EUR/JPY">EUR/JPY</option>
+              <option value="GBP/JPY">GBP/JPY</option>
+              <option value="EUR/GBP">EUR/GBP</option>
+              <option value="AUD/JPY">AUD/JPY</option>
+              <option value="CAD/JPY">CAD/JPY</option>
+              <option value="NZD/JPY">NZD/JPY</option>
+              <option value="EUR/AUD">EUR/AUD</option>
+              <option value="GBP/AUD">GBP/AUD</option>
+              <option value="EUR/CAD">EUR/CAD</option>
+              <option value="GBP/CAD">GBP/CAD</option>
+              <option value="AUD/CAD">AUD/CAD</option>
+              <option value="AUD/NZD">AUD/NZD</option>
+              <option value="EUR/NZD">EUR/NZD</option>
+              <option value="GBP/NZD">GBP/NZD</option>
+              <option value="EUR/CHF">EUR/CHF</option>
+              <option value="GBP/CHF">GBP/CHF</option>
+              <option value="CHF/JPY">CHF/JPY</option>
+              <option value="NZD/CAD">NZD/CAD</option>
+              <option value="NZD/CHF">NZD/CHF</option>
+              <option value="AUD/CHF">AUD/CHF</option>
+              <option value="CAD/CHF">CAD/CHF</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Direction</label>
+            <select id="fDirection">
+              <option value="Long">Long</option>
+              <option value="Short">Short</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Date</label>
+            <input type="date" id="fDate">
+          </div>
+          <div class="form-field">
+            <label>Session</label>
+            <select id="fSession">
+              <option value="Asian">Asian</option>
+              <option value="London">London</option>
+              <option value="NY">NY</option>
+              <option value="Late NY">Late NY</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Execution -->
+      <div class="form-section">
+        <div class="form-section-title">② Execution</div>
+        <div class="form-grid cols-3">
+          <div class="form-field">
+            <label>Entry Price</label>
+            <input type="text" id="fEntry" placeholder="1.0850" autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label>Stop Loss</label>
+            <input type="text" id="fSL" placeholder="1.0820" autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label>Take Profit</label>
+            <input type="text" id="fTP" placeholder="1.0940" autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label>Risk $ (tuỳ chọn)</label>
+            <input type="text" id="fRiskDollar" placeholder="50" autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label>Lot Size (tuỳ chọn)</label>
+            <input type="text" id="fLotSize" placeholder="0.5" autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label>Planned RR</label>
+            <input type="text" id="fPlannedRR" readonly tabindex="-1" style="color:var(--accent);background:var(--bg-elevated);">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: ICT Setup Checklist -->
+      <div class="form-section">
+        <div class="form-section-title">③ ICT Setup Checklist</div>
+        <div class="checklist" id="fChecklist">
+          <label><input type="checkbox" data-check="htf"> HTF Bias xác nhận (D1/W1)</label>
+          <label><input type="checkbox" data-check="ob"> Order Block / Breaker Block</label>
+          <label><input type="checkbox" data-check="fvg"> Fair Value Gap (FVG)</label>
+          <label><input type="checkbox" data-check="liq"> Liquidity Sweep (BSL/SSL)</label>
+          <label><input type="checkbox" data-check="smt"> SMT Divergence / Market Structure Shift</label>
+          <label><input type="checkbox" data-check="kz"> Kill Zone Timing</label>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-muted);">
+          Compliance: <strong id="fComplianceDisplay">0/6</strong>
+        </div>
+      </div>
+
+      <!-- Section 4: Psychology -->
+      <div class="form-section">
+        <div class="form-section-title">④ Psychology</div>
+        <div class="form-field" style="margin-bottom:10px;">
+          <label>Tâm lý khi vào lệnh</label>
+          <div class="mood-row" id="fMoodRow">
+            <button class="mood-btn" onclick="selectMood(this,'Confident')">Confident</button>
+            <button class="mood-btn" onclick="selectMood(this,'Calm')">Calm</button>
+            <button class="mood-btn" onclick="selectMood(this,'Neutral')">Neutral</button>
+            <button class="mood-btn" onclick="selectMood(this,'Anxious')">Anxious</button>
+            <button class="mood-btn" onclick="selectMood(this,'FOMO')">FOMO</button>
+            <button class="mood-btn" onclick="selectMood(this,'Revenge')">Revenge</button>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Ghi chú</label>
+          <textarea id="fNotes" placeholder="Lý do vào lệnh, setup, context..."></textarea>
+        </div>
+      </div>
+
+      <!-- Section 5: Result -->
+      <div class="form-section">
+        <div class="form-section-title">⑤ Result</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Kết quả</label>
+            <select id="fResult" onchange="toggleResultFields()">
+              <option value="open">Open (chưa đóng)</option>
+              <option value="win">Win</option>
+              <option value="loss">Loss</option>
+              <option value="be">Break Even</option>
+            </select>
+          </div>
+          <div class="form-field" id="fActualRRWrap" style="display:none">
+            <label>Actual R:R</label>
+            <input type="text" id="fActualRR" placeholder="2.1" autocomplete="off">
+          </div>
+          <div class="form-field" id="fExitPriceWrap" style="display:none">
+            <label>Exit Price</label>
+            <input type="text" id="fExitPrice" placeholder="1.0940" autocomplete="off">
+          </div>
+          <div class="form-field full" id="fLessonWrap" style="display:none">
+            <label>Bài học rút ra</label>
+            <textarea id="fLesson" placeholder="Ghi chú sau trade..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-delete" id="btnDeleteTrade" onclick="deleteTrade()" style="display:none;margin-right:auto;">Xoá</button>
+      <button class="btn-cancel" onclick="closeTradeModal()">Huỷ</button>
+      <button class="btn-save" onclick="saveTrade()">Lưu Trade</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/utils.js"></script>
+<script src="../shared/store.js"></script>
+<script src="../shared/crypto.js"></script>
+<script src="../shared/sync.js"></script>
+<script src="../shared/nav.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const TRADE_KEY = 'nexus_trades';
+let trades = [];
+let editingId = null;
+let selectedMood = '';
+
+function loadTrades() {
+  try { trades = JSON.parse(localStorage.getItem(TRADE_KEY) || '[]'); }
+  catch(e) { trades = []; }
+}
+
+function saveTrades() {
+  localStorage.setItem(TRADE_KEY, JSON.stringify(trades));
+}
+
+// ═══════════════════════════════════════════════════
+//  KPI CALCULATIONS
+// ═══════════════════════════════════════════════════
+function updateKPIs() {
+  const closed = trades.filter(t => t.result && t.result !== 'open');
+  const wins = closed.filter(t => t.result === 'win');
+  const losses = closed.filter(t => t.result === 'loss');
+
+  // Win Rate
+  const wr = closed.length ? (wins.length / closed.length * 100) : 0;
+  document.getElementById('kpiWinRate').textContent = closed.length ? wr.toFixed(0) + '%' : '—';
+  document.getElementById('kpiWinRate').style.color = wr >= 50 ? 'var(--bull)' : wr > 0 ? 'var(--bear)' : 'var(--text-primary)';
+  document.getElementById('kpiWinSub').textContent = closed.length ? `${wins.length}W / ${losses.length}L` : '';
+
+  // Avg RR
+  const rrs = closed.filter(t => t.actualRR != null && t.actualRR !== '').map(t => parseFloat(t.actualRR));
+  const winRRs = wins.filter(t => t.actualRR != null).map(t => parseFloat(t.actualRR));
+  const avgWinRR = winRRs.length ? (winRRs.reduce((a, b) => a + b, 0) / winRRs.length) : 0;
+  document.getElementById('kpiAvgRR').textContent = winRRs.length ? avgWinRR.toFixed(1) + 'R' : '—';
+  document.getElementById('kpiRRSub').textContent = rrs.length ? `${rrs.length} trades với RR` : '';
+
+  // Total
+  document.getElementById('kpiTotal').textContent = trades.length;
+  const openCount = trades.filter(t => !t.result || t.result === 'open').length;
+  document.getElementById('kpiTotalSub').textContent = openCount ? `${openCount} open` : '';
+
+  // Net R
+  const netR = rrs.reduce((sum, r) => sum + r, 0);
+  const netEl = document.getElementById('kpiNetR');
+  netEl.textContent = rrs.length ? (netR >= 0 ? '+' : '') + netR.toFixed(1) + 'R' : '0';
+  netEl.style.color = netR > 0 ? 'var(--bull)' : netR < 0 ? 'var(--bear)' : 'var(--text-primary)';
+  document.getElementById('kpiNetSub').textContent = '';
+
+  // Compliance
+  const comps = trades.filter(t => t.compliance != null).map(t => t.compliance);
+  const avgComp = comps.length ? (comps.reduce((a, b) => a + b, 0) / comps.length) : 0;
+  const compEl = document.getElementById('kpiCompliance');
+  compEl.textContent = comps.length ? Math.round(avgComp) + '%' : '—';
+  compEl.style.color = avgComp >= 80 ? 'var(--bull)' : avgComp >= 50 ? 'var(--accent)' : avgComp > 0 ? 'var(--bear)' : 'var(--text-primary)';
+  document.getElementById('kpiCompSub').textContent = comps.length ? `avg ${comps.length} trades` : '';
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER TRADES
+// ═══════════════════════════════════════════════════
+function renderTrades() {
+  const list = document.getElementById('tradesList');
+  let filtered = [...trades];
+
+  // Apply filters
+  const fPair = document.getElementById('filterPair').value;
+  const fSession = document.getElementById('filterSession').value;
+  const fResult = document.getElementById('filterResult').value;
+  const fMood = document.getElementById('filterMood').value;
+
+  if (fPair) filtered = filtered.filter(t => t.pair === fPair);
+  if (fSession) filtered = filtered.filter(t => t.session === fSession);
+  if (fResult) filtered = filtered.filter(t => (t.result || 'open') === fResult);
+  if (fMood) filtered = filtered.filter(t => t.mood === fMood);
+
+  // Sort by date desc
+  filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  document.getElementById('filterCount').textContent = `${filtered.length} / ${trades.length} trades`;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${SVG_ICONS['bookOpen']}</div>
+      <p>${trades.length ? 'Không có trade nào khớp filter.' : 'Chưa có trade nào. Bấm "+ New Trade" để bắt đầu.'}</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(t => {
+    const result = t.result || 'open';
+    const rr = t.actualRR != null && t.actualRR !== '' ? parseFloat(t.actualRR) : null;
+    const rrDisplay = rr !== null ? (rr >= 0 ? '+' : '') + rr.toFixed(1) + 'R' : (result === 'open' ? 'OPEN' : '—');
+    const rrClass = rr !== null ? (rr > 0 ? 'pos' : rr < 0 ? 'neg' : 'neutral') : 'neutral';
+
+    const d = t.date ? new Date(t.date) : null;
+    const dateStr = d ? d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '—';
+
+    const comp = t.compliance != null ? t.compliance : null;
+    const compChecked = t.checkCount || 0;
+    const compClass = comp != null ? (comp >= 80 ? 'high' : comp >= 50 ? 'mid' : 'low') : '';
+
+    return `<div class="trade-card ${result}" onclick="editTrade('${t.id}')">
+      <div class="tc-header">
+        <span class="tc-pair">${t.pair}</span>
+        <span class="tc-bias ${t.direction?.toLowerCase()}">${t.direction}</span>
+        <span class="tc-date">${dateStr}</span>
+        <span class="tc-session">${t.session || ''}</span>
+        <span class="tc-rr ${rrClass}">${rrDisplay}</span>
+      </div>
+      <div class="tc-body">
+        <span>Entry: ${t.entry || '—'}</span>
+        <span>SL: ${t.sl || '—'}</span>
+        ${t.tp ? `<span>TP: ${t.tp}</span>` : ''}
+        ${comp != null ? `<span class="tc-compliance ${compClass}">${compChecked}/6 ${SVG_ICONS.check}</span>` : ''}
+        ${t.mood ? `<span>Mood: ${t.mood}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════
+function openTradeModal(trade) {
+  editingId = trade ? trade.id : null;
+  document.getElementById('modalTitle').textContent = trade ? 'Edit Trade' : 'New Trade';
+  document.getElementById('btnDeleteTrade').style.display = trade ? '' : 'none';
+
+  // Reset form
+  document.getElementById('fPair').value = trade?.pair || 'EUR/USD';
+  document.getElementById('fDirection').value = trade?.direction || 'Long';
+  document.getElementById('fDate').value = trade?.date || new Date().toISOString().split('T')[0];
+  document.getElementById('fSession').value = trade?.session || detectSession();
+  document.getElementById('fEntry').value = trade?.entry || '';
+  document.getElementById('fSL').value = trade?.sl || '';
+  document.getElementById('fTP').value = trade?.tp || '';
+  document.getElementById('fRiskDollar').value = trade?.riskDollar || '';
+  document.getElementById('fLotSize').value = trade?.lotSize || '';
+  document.getElementById('fPlannedRR').value = trade?.plannedRR || '';
+  document.getElementById('fResult').value = trade?.result || 'open';
+  document.getElementById('fActualRR').value = trade?.actualRR ?? '';
+  document.getElementById('fExitPrice').value = trade?.exitPrice || '';
+  document.getElementById('fNotes').value = trade?.notes || '';
+  document.getElementById('fLesson').value = trade?.lesson || '';
+
+  // Mood
+  selectedMood = trade?.mood || '';
+  document.querySelectorAll('.mood-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent === selectedMood);
+  });
+
+  // Checklist
+  const checks = trade?.checks || {};
+  document.querySelectorAll('#fChecklist input[data-check]').forEach(cb => {
+    cb.checked = !!checks[cb.dataset.check];
+  });
+  updateComplianceDisplay();
+
+  // Auto-fill context from locked bias
+  loadContextAutoFill();
+
+  toggleResultFields();
+  document.getElementById('tradeModal').classList.add('show');
+}
+
+function closeTradeModal() {
+  document.getElementById('tradeModal').classList.remove('show');
+  editingId = null;
+}
+
+function detectSession() {
+  const h = new Date().getHours(); // VN time (UTC+7)
+  if (h >= 5 && h < 14) return 'Asian';
+  if (h >= 14 && h < 19) return 'London';
+  if (h >= 19 && h < 23) return 'NY';
+  return 'Late NY';
+}
+
+function loadContextAutoFill() {
+  const el = document.getElementById('contextAutoFill');
+  try {
+    const bias = JSON.parse(localStorage.getItem('nexus_weekly_bias') || 'null');
+    if (bias && bias.pairs && bias.pairs.length) {
+      el.innerHTML = `<div class="autofill-badge" style="margin-bottom:10px;">
+        Auto-fill từ Weekly Bias — ${bias.weekLabel || ''}
+      </div>`;
+    } else {
+      el.innerHTML = '';
+    }
+  } catch(e) { el.innerHTML = ''; }
+}
+
+function toggleResultFields() {
+  const result = document.getElementById('fResult').value;
+  const show = result !== 'open';
+  document.getElementById('fActualRRWrap').style.display = show ? '' : 'none';
+  document.getElementById('fExitPriceWrap').style.display = show ? '' : 'none';
+  document.getElementById('fLessonWrap').style.display = show ? '' : 'none';
+}
+
+function selectMood(btn, mood) {
+  selectedMood = mood;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function updateComplianceDisplay() {
+  const cbs = document.querySelectorAll('#fChecklist input[data-check]');
+  const checked = [...cbs].filter(cb => cb.checked).length;
+  document.getElementById('fComplianceDisplay').textContent = `${checked}/6`;
+}
+
+// Listen to checklist changes
+document.getElementById('fChecklist').addEventListener('change', updateComplianceDisplay);
+
+// Auto-calc planned RR
+['fEntry', 'fSL', 'fTP'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const entry = parseFloat(document.getElementById('fEntry').value);
+    const sl = parseFloat(document.getElementById('fSL').value);
+    const tp = parseFloat(document.getElementById('fTP').value);
+    if (!isNaN(entry) && !isNaN(sl) && !isNaN(tp) && sl !== entry) {
+      const risk = Math.abs(entry - sl);
+      const reward = Math.abs(tp - entry);
+      const rr = (reward / risk).toFixed(1);
+      document.getElementById('fPlannedRR').value = rr + ':1';
+    } else {
+      document.getElementById('fPlannedRR').value = '';
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════
+//  SAVE / DELETE
+// ═══════════════════════════════════════════════════
+function saveTrade() {
+  const pair = document.getElementById('fPair').value;
+  const direction = document.getElementById('fDirection').value;
+  const date = document.getElementById('fDate').value;
+  const session = document.getElementById('fSession').value;
+  const entry = document.getElementById('fEntry').value.trim();
+  const sl = document.getElementById('fSL').value.trim();
+  const tp = document.getElementById('fTP').value.trim();
+  const riskDollar = document.getElementById('fRiskDollar').value.trim();
+  const lotSize = document.getElementById('fLotSize').value.trim();
+  const plannedRR = document.getElementById('fPlannedRR').value;
+  const result = document.getElementById('fResult').value;
+  const actualRR = document.getElementById('fActualRR').value.trim();
+  const exitPrice = document.getElementById('fExitPrice').value.trim();
+  const notes = document.getElementById('fNotes').value.trim();
+  const lesson = document.getElementById('fLesson').value.trim();
+
+  // Checklist
+  const checks = {};
+  let checkCount = 0;
+  document.querySelectorAll('#fChecklist input[data-check]').forEach(cb => {
+    checks[cb.dataset.check] = cb.checked;
+    if (cb.checked) checkCount++;
+  });
+  const compliance = Math.round((checkCount / 6) * 100);
+
+  const trade = {
+    id: editingId || Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    pair, direction, date, session,
+    entry, sl, tp, riskDollar, lotSize, plannedRR,
+    checks, checkCount, compliance,
+    mood: selectedMood,
+    notes, result,
+    actualRR: actualRR || null,
+    exitPrice, lesson,
+    updatedAt: new Date().toISOString()
+  };
+
+  if (editingId) {
+    const idx = trades.findIndex(t => t.id === editingId);
+    if (idx >= 0) trades[idx] = trade;
+  } else {
+    trades.unshift(trade);
+  }
+
+  saveTrades();
+  closeTradeModal();
+  renderTrades();
+  updateKPIs();
+  updateFilterPairs();
+  showToast(`${SVG_ICONS.check} ${editingId ? 'Đã cập nhật' : 'Đã lưu'} trade ${pair}`);
+}
+
+function editTrade(id) {
+  const trade = trades.find(t => t.id === id);
+  if (trade) openTradeModal(trade);
+}
+
+function deleteTrade() {
+  if (!editingId) return;
+  if (!confirm('Xoá trade này?')) return;
+  trades = trades.filter(t => t.id !== editingId);
+  saveTrades();
+  closeTradeModal();
+  renderTrades();
+  updateKPIs();
+  updateFilterPairs();
+  showToast('Đã xoá trade', 'warn');
+}
+
+// ═══════════════════════════════════════════════════
+//  FILTER PAIRS DYNAMIC
+// ═══════════════════════════════════════════════════
+function updateFilterPairs() {
+  const select = document.getElementById('filterPair');
+  const current = select.value;
+  const pairs = [...new Set(trades.map(t => t.pair))].sort();
+  select.innerHTML = '<option value="">Tất cả pairs</option>' +
+    pairs.map(p => `<option value="${p}" ${p === current ? 'selected' : ''}>${p}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+loadTrades();
+renderTrades();
+updateKPIs();
+updateFilterPairs();
+</script>
+</body>
+</html>

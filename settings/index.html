@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS — Settings</title>
+  <meta name="description" content="Cài đặt đồng bộ dữ liệu, export/import backup cho NEXUS Trading Tools.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+  /* Uses design system tokens */
+  .settings-header { margin-bottom: 32px; }
+  .settings-header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 4vw, 32px);
+    color: var(--text-primary);
+    margin: 0 0 6px;
+  }
+  .settings-header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .settings-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .settings-section h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .settings-section h2 svg { width: 20px; height: 20px; color: var(--accent); }
+  .settings-section-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 20px;
+  }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .field-row { display: flex; gap: 8px; }
+  .field-input {
+    flex: 1;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--text-muted); }
+  .field-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: var(--r-md);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+  .btn:hover { border-color: var(--border-bright); background: var(--bg-hover); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-danger {
+    border-color: var(--bear);
+    color: var(--bear);
+  }
+  .btn-danger:hover { background: rgba(224,92,92,0.1); }
+  .btn svg { width: 16px; height: 16px; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: var(--r-sm);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot.synced { background: var(--bull); }
+  .status-dot.pending { background: var(--warn); }
+  .status-dot.error   { background: var(--bear); }
+  .status-dot.offline { background: var(--text-muted); }
+  .status-dot.not-configured { background: var(--text-muted); }
+
+  .sync-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .sync-info-item {
+    background: var(--bg-primary);
+    border-radius: var(--r-md);
+    padding: 12px;
+  }
+  .sync-info-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .sync-info-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .toast {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: var(--r-md);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 9999;
+    animation: toastIn 0.25s ease;
+    white-space: nowrap;
+  }
+  .toast.success { background: var(--bull); color: #fff; }
+  .toast.error   { background: var(--bear); color: #fff; }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .settings-section { padding: 16px; }
+    .field-row { flex-direction: column; }
+    .btn-row { flex-direction: column; }
+    .btn { justify-content: center; }
+  }
+  </style>
+</head>
+<body>
+<div class="nx-app">
+  <div class="nx-main">
+    <div class="nx-content">
+
+      <!-- Header -->
+      <div class="settings-header">
+        <h1><span class="hl">Settings</span></h1>
+        <p>Quản lý đồng bộ dữ liệu và backup cho NEXUS</p>
+      </div>
+
+      <!-- ═══ Section 1: Cloud Sync ═══ -->
+      <div class="settings-section" id="syncSetup">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+          Cloud Sync
+        </h2>
+        <p class="settings-section-desc">Đồng bộ dữ liệu giữa các thiết bị qua GitHub Secret Gist (mã hóa end-to-end)</p>
+
+        <!-- Status -->
+        <div style="margin-bottom: 16px;">
+          <span class="status-badge" id="syncStatus">
+            <span class="status-dot not-configured"></span>
+            <span>Chưa cấu hình</span>
+          </span>
+        </div>
+
+        <!-- Setup form (shown when not configured) -->
+        <div id="setupForm">
+          <div class="field-group">
+            <label>GitHub Personal Access Token</label>
+            <div class="field-row">
+              <input type="password" class="field-input" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+              <button class="btn" onclick="toggleTokenVis()" id="toggleTokenBtn" title="Hiện/ẩn token">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="field-hint">Tạo tại GitHub → Settings → Developer settings → Personal access tokens → Fine-grained → chỉ tick <b>Gists</b> (Read and Write)</div>
+          </div>
+
+          <div class="field-group">
+            <label>Mật khẩu mã hóa</label>
+            <input type="password" class="field-input" id="passwordInput" placeholder="Nhập mật khẩu để mã hóa dữ liệu" autocomplete="off">
+            <div class="field-hint">Dùng chung mật khẩu này trên tất cả thiết bị. <b>Nếu quên, không thể khôi phục dữ liệu từ cloud.</b></div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="connectBtn" onclick="handleConnect()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              Kết nối
+            </button>
+          </div>
+        </div>
+
+        <!-- Controls (shown when configured) -->
+        <div id="syncControls" style="display:none;">
+          <div class="sync-info" id="syncInfo"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="handleSync()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+              Đồng bộ ngay
+            </button>
+            <button class="btn" onclick="handlePull()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Tải từ cloud
+            </button>
+            <button class="btn" onclick="handlePush()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Đẩy lên cloud
+            </button>
+            <button class="btn btn-danger" onclick="handleDisconnect()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              Ngắt kết nối
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Section 2: Local Backup ═══ -->
+      <div class="settings-section">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Backup & Khôi phục
+        </h2>
+        <p class="settings-section-desc">Export/Import dữ liệu dưới dạng file JSON — không cần kết nối cloud</p>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="handleExport()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export tất cả dữ liệu
+          </button>
+          <button class="btn" onclick="document.getElementById('importFile').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Import dữ liệu
+          </button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+        </div>
+      </div>
+
+      <!-- ═══ Section 3: Data Overview ═══ -->
+      <div class="settings-section">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+          Dữ liệu hiện tại
+        </h2>
+        <p class="settings-section-desc">Tổng quan dữ liệu đang lưu trên thiết bị này</p>
+        <div id="dataOverview" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;"></div>
+      </div>
+
+      <footer class="nx-footer">
+        NEXUS — ICT Trading Command Center · Settings
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/utils.js"></script>
+<script src="../shared/store.js"></script>
+<script src="../shared/crypto.js"></script>
+<script src="../shared/sync.js"></script>
+<script src="../shared/nav.js"></script>
+<script>
+
+// ── Toast ─────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+// ── Toggle token visibility ───────────────────
+function toggleTokenVis() {
+  const inp = document.getElementById('tokenInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ── Connect ───────────────────────────────────
+async function handleConnect() {
+  const token = document.getElementById('tokenInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+
+  if (!token) { toast('Vui lòng nhập GitHub Token', 'error'); return; }
+  if (!password || password.length < 4) { toast('Mật khẩu cần ít nhất 4 ký tự', 'error'); return; }
+
+  const btn = document.getElementById('connectBtn');
+  btn.disabled = true;
+  btn.textContent = 'Đang kết nối...';
+
+  try {
+    const result = await SyncEngine.init(token, password);
+    if (result.success) {
+      toast(result.message);
+      refreshUI();
+    } else {
+      toast(result.message, 'error');
+    }
+  } catch (e) {
+    toast('Lỗi: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Kết nối`;
+}
+
+// ── Sync actions ──────────────────────────────
+async function handleSync() {
+  try {
+    toast('Đang đồng bộ...');
+    await SyncEngine.sync();
+    toast('Đồng bộ thành công!');
+    refreshUI();
+  } catch (e) { toast('Lỗi sync: ' + e.message, 'error'); }
+}
+
+async function handlePull() {
+  if (!confirm('Dữ liệu trên cloud sẽ ghi đè dữ liệu local. Tiếp tục?')) return;
+  try {
+    await SyncEngine.pull();
+    toast('Đã tải dữ liệu từ cloud!');
+    refreshUI();
+  } catch (e) { toast('Lỗi pull: ' + e.message, 'error'); }
+}
+
+async function handlePush() {
+  if (!confirm('Dữ liệu local sẽ ghi đè dữ liệu trên cloud. Tiếp tục?')) return;
+  try {
+    await SyncEngine.push();
+    toast('Đã đẩy dữ liệu lên cloud!');
+    refreshUI();
+  } catch (e) { toast('Lỗi push: ' + e.message, 'error'); }
+}
+
+function handleDisconnect() {
+  if (!confirm('Ngắt kết nối sẽ xóa token và mật khẩu khỏi thiết bị này. Dữ liệu local vẫn giữ nguyên. Tiếp tục?')) return;
+  SyncEngine.disconnect();
+  toast('Đã ngắt kết nối');
+  refreshUI();
+}
+
+// ── Export / Import ───────────────────────────
+function handleExport() {
+  const json = SyncEngine.exportAll();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nexus-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('File backup đã được tải xuống');
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = SyncEngine.importAll(e.target.result);
+    if (result.success) {
+      toast(result.message);
+      refreshUI();
+    } else {
+      toast(result.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // reset
+}
+
+// ── Refresh UI ────────────────────────────────
+function refreshUI() {
+  const configured = SyncEngine.isConfigured();
+
+  // Show/hide sections
+  document.getElementById('setupForm').style.display = configured ? 'none' : 'block';
+  document.getElementById('syncControls').style.display = configured ? 'block' : 'none';
+
+  // Status badge
+  const status = SyncEngine.getStatus();
+  const statusEl = document.getElementById('syncStatus');
+  const labels = {
+    'synced': 'Đã đồng bộ',
+    'pending': 'Có thay đổi chưa sync',
+    'offline': 'Offline',
+    'not-configured': 'Chưa cấu hình'
+  };
+  statusEl.innerHTML = `<span class="status-dot ${status}"></span><span>${labels[status]}</span>`;
+
+  // Sync info
+  if (configured) {
+    const lastSync = SyncEngine.getLastSync();
+    const infoEl = document.getElementById('syncInfo');
+    infoEl.innerHTML = `
+      <div class="sync-info-item">
+        <div class="sync-info-label">Lần sync cuối</div>
+        <div class="sync-info-value">${lastSync ? new Date(lastSync).toLocaleString('vi-VN') : 'Chưa sync'}</div>
+      </div>
+      <div class="sync-info-item">
+        <div class="sync-info-label">Gist ID</div>
+        <div class="sync-info-value" style="font-size:11px;word-break:break-all;">${localStorage.getItem('nexus_sync_gist_id') || '—'}</div>
+      </div>
+    `;
+  }
+
+  // Data overview
+  renderDataOverview();
+}
+
+function renderDataOverview() {
+  const overview = document.getElementById('dataOverview');
+  const items = [
+    { key: 'nexus_trades', label: 'Trade Journal', icon: SVG_ICONS.barChart },
+    { key: 'nexus_weekly_bias', label: 'Weekly Bias', icon: SVG_ICONS.trendingUp },
+    { key: 'nexus_daily_bias', label: 'Daily Bias', icon: SVG_ICONS.compass },
+    { key: 'nexus_alerts', label: 'Alerts', icon: SVG_ICONS.bell },
+    { key: 'cot_history', label: 'COT History', icon: SVG_ICONS.clipboard },
+    { key: 'nexus_prop_settings', label: 'Prop Firm', icon: SVG_ICONS.building },
+  ];
+
+  overview.innerHTML = items.map(item => {
+    let count = '—';
+    try {
+      const raw = localStorage.getItem(item.key);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data)) count = `${data.length} mục`;
+        else if (typeof data === 'object' && data !== null) count = 'Có dữ liệu';
+        else count = 'Có dữ liệu';
+      } else {
+        count = 'Trống';
+      }
+    } catch (e) { count = 'Lỗi'; }
+
+    return `<div class="sync-info-item">
+      <div class="sync-info-label">${item.icon} ${item.label}</div>
+      <div class="sync-info-value">${count}</div>
+    </div>`;
+  }).join('');
+}
+
+// Init
+refreshUI();
+</script>
+</body>
+</html>

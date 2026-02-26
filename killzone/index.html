@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Kill Zone Timer</title>
+<meta name="description" content="NEXUS Kill Zone Timer — Đồng hồ real-time theo dõi Kill Zone ICT, Timeline tin tức, và Smart Recommendation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+/* ── Kill Zone page-specific styles ── */
+/* Uses design system tokens: --bg-primary, --bg-surface, --bg-elevated,
+   --border, --border-bright, --text-primary, --text-secondary, --text-muted,
+   --accent, --bull, --bear, --warn, --neutral, --font-display, --font-mono, --font-body */
+
+/* ── Header ── */
+.kz-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.kz-header h1 {
+  font-family: var(--font-display); font-size: 28px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--text-primary);
+}
+.kz-header h1 span { color: var(--accent); }
+
+/* ── Live Clock ── */
+.kz-clock {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 28px; font-weight: 700;
+  color: var(--text-primary); letter-spacing: 0.02em;
+}
+.kz-clock-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted);
+  font-family: var(--font-display);
+}
+.kz-clock-icon { color: var(--accent); display: flex; align-items: center; }
+.kz-clock-icon svg { width: 24px; height: 24px; }
+
+/* ── Date/Timezone Bar ── */
+.kz-tz-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 24px; font-size: 12px; color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.kz-tz-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--accent); background: var(--accent-dim);
+  padding: 3px 10px; border-radius: var(--r-sm); letter-spacing: 0.06em;
+  font-weight: 700; font-family: var(--font-display);
+  border: 1px solid rgba(200,169,110,0.2);
+}
+
+/* ── Kill Zone Cards ── */
+.kz-zones { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.kz-zone {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 16px 20px; position: relative;
+  border-left: 3px solid var(--border); transition: all 0.3s;
+}
+.kz-zone.active {
+  border-left-color: var(--bull);
+  border-color: rgba(92,200,160,0.3);
+  box-shadow: 0 0 20px rgba(92,200,160,0.06);
+}
+.kz-zone.avoid {
+  border-left-color: var(--warn);
+  border-color: rgba(224,192,92,0.25);
+}
+.kz-zone.upcoming { border-left-color: var(--text-muted); }
+.kz-zone.passed { opacity: 0.45; }
+
+.kz-zone-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.kz-zone-indicator {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.kz-zone-indicator.active { background: var(--bull); box-shadow: 0 0 8px var(--bull); animation: nx-pulse 2s ease-in-out infinite; }
+.kz-zone-indicator.upcoming { background: var(--text-muted); }
+.kz-zone-indicator.avoid { background: var(--warn); }
+.kz-zone-indicator.passed { background: var(--border); }
+
+.kz-zone-name {
+  font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  color: var(--text-primary); letter-spacing: 0.04em;
+}
+.kz-zone-status {
+  font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.kz-zone-status.live { color: var(--bull); font-weight: 700; }
+.kz-zone-status.soon { color: var(--text-secondary); }
+.kz-zone-status.warn { color: var(--warn); font-weight: 700; }
+.kz-zone-status.done { color: var(--text-muted); }
+
+.kz-zone-time {
+  margin-left: auto; font-size: 12px; font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* Progress bar */
+.kz-progress {
+  height: 6px; background: var(--border); border-radius: 3px;
+  overflow: hidden; margin-top: 4px;
+}
+.kz-progress-fill {
+  height: 100%; border-radius: 3px; transition: width 1s linear;
+}
+.kz-progress-fill.active { background: linear-gradient(90deg, var(--bull), #3dffc8); }
+.kz-progress-fill.avoid { background: linear-gradient(90deg, var(--warn), #e0c05c); }
+
+/* ── News Section ── */
+.kz-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+}
+.kz-section-title {
+  font-family: var(--font-display); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px;
+}
+.kz-section-title svg { width: 16px; height: 16px; stroke: var(--accent); }
+
+/* News Timeline */
+.kz-news-timeline { position: relative; padding-left: 24px; margin-bottom: 28px; }
+.kz-news-timeline::before {
+  content: ''; position: absolute; left: 5px; top: 0; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.kz-news-item {
+  position: relative; padding: 10px 0 10px 16px;
+  border-bottom: 1px solid rgba(42,47,58,0.5);
+}
+.kz-news-item:last-child { border-bottom: none; }
+.kz-news-dot {
+  position: absolute; left: -22px; top: 14px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--border-bright);
+}
+.kz-news-dot.high { background: var(--bear); box-shadow: 0 0 6px var(--bear); }
+.kz-news-dot.medium { background: var(--warn); }
+.kz-news-dot.low { background: var(--text-muted); }
+
+.kz-news-head {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.kz-news-time {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  color: var(--text-primary); min-width: 44px;
+}
+.kz-news-impact {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 2px 6px; border-radius: var(--r-sm); text-transform: uppercase;
+}
+.kz-news-impact.high { color: var(--bear); background: var(--bear-dim); }
+.kz-news-impact.medium { color: var(--warn); background: var(--warn-dim); }
+.kz-news-impact.low { color: var(--text-muted); background: var(--bg-hover); }
+.kz-news-currency {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.08em; font-family: var(--font-display);
+}
+.kz-news-title {
+  font-size: 13px; color: var(--text-primary); font-weight: 500;
+}
+.kz-news-details {
+  font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);
+  margin-top: 3px;
+}
+
+/* ── News Input Modal ── */
+.kz-news-input-area {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 16px 20px; margin-bottom: 24px;
+}
+.kz-news-input-area textarea {
+  width: 100%; min-height: 100px; resize: vertical;
+  background: var(--bg-primary); border: 1px solid var(--border-bright); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 12px; padding: 10px;
+  border-radius: var(--r-sm); outline: none; transition: border-color 0.2s;
+}
+.kz-news-input-area textarea:focus { border-color: var(--accent); }
+.kz-news-input-area textarea::placeholder { color: var(--text-muted); }
+.kz-news-input-hint {
+  font-size: 11px; color: var(--text-muted); margin-top: 8px;
+  font-family: var(--font-mono); line-height: 1.5;
+}
+.kz-news-input-actions {
+  display: flex; gap: 8px; margin-top: 10px; align-items: center;
+}
+
+/* ── Smart Recommendation ── */
+.kz-reco {
+  background: rgba(18, 21, 27, 0.7);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 169, 110, 0.15); border-radius: var(--r-md);
+  padding: 20px; margin-bottom: 28px;
+  box-shadow: var(--shadow-glow);
+}
+.kz-reco-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+}
+.kz-reco-header svg { width: 18px; height: 18px; stroke: var(--accent); }
+.kz-reco-body {
+  font-size: 13px; color: var(--text-primary); line-height: 1.6;
+}
+.kz-reco-body .highlight { color: var(--accent); font-weight: 600; }
+.kz-reco-body .bull-tag { color: var(--bull); font-weight: 600; }
+.kz-reco-body .bear-tag { color: var(--bear); font-weight: 600; }
+
+/* ── Empty State ── */
+.kz-empty {
+  text-align: center; padding: 40px 20px; color: var(--text-muted);
+  font-size: 13px; border: 1px dashed var(--border); border-radius: var(--r-md);
+}
+
+/* ── Toggle for news input ── */
+.kz-toggle-btn {
+  background: none; border: 1px solid var(--border-bright); color: var(--text-secondary);
+  padding: 6px 14px; border-radius: var(--r-sm); font-size: 11px;
+  font-family: var(--font-mono); cursor: pointer; transition: all 0.2s;
+}
+.kz-toggle-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+@media (max-width: 600px) {
+  .kz-header { flex-direction: column; align-items: flex-start; }
+  .kz-clock { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="nx-app">
+  <div class="nx-main">
+    <div class="nx-content">
+
+  <div class="kz-header">
+    <h1><a href="../" style="color:inherit;text-decoration:none">NEXUS</a> · Kill <span>Zone</span></h1>
+    <div>
+      <div class="kz-clock">
+        <span class="kz-clock-icon"></span>
+        <span id="liveClock">--:--:--</span>
+      </div>
+      <div class="kz-clock-label" style="text-align:right" id="clockLabel">VN Time (UTC+7)</div>
+    </div>
+  </div>
+
+  <!-- Timezone / Date Bar -->
+  <div class="kz-tz-bar">
+    <span id="dateDisplay">—</span>
+    <span class="kz-tz-badge" id="dstBadge">—</span>
+    <span id="nyTimeDisplay" style="margin-left:auto">—</span>
+  </div>
+
+  <!-- KPI Row — quick glance -->
+  <div class="nx-kpi-row" style="margin-bottom:24px">
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiCurrentZone" style="font-size:18px;">—</div>
+      <div class="nx-kpi-label">Zone hiện tại</div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiTimeLeft">—</div>
+      <div class="nx-kpi-label">Còn lại</div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiNextZone">—</div>
+      <div class="nx-kpi-label">Zone tiếp theo</div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kpiNewsCount">0</div>
+      <div class="nx-kpi-label">Tin hôm nay</div>
+    </div>
+  </div>
+
+  <!-- Kill Zone Cards -->
+  <h2 class="nx-section-title" id="zonesTitle">KILL ZONES</h2>
+  <div class="kz-zones" id="kzZones"></div>
+
+  <!-- News Timeline -->
+  <div class="kz-section-header">
+    <h2 class="nx-section-title" style="margin-bottom:0">NEWS TIMELINE</h2>
+    <button class="kz-toggle-btn" id="toggleNewsInput" onclick="toggleNewsInput()">+ Thêm tin</button>
+  </div>
+
+  <!-- News Input Area (hidden by default) -->
+  <div class="kz-news-input-area" id="newsInputArea" style="display:none">
+    <textarea id="newsTextarea" placeholder="Paste tin tức từ Forex Factory / ForexLive (mỗi dòng 1 tin)...
+
+VD:
+07:30 JPY BOJ Minutes High
+14:15 EUR German CPI Medium Forecast: 0.3% Prev: 0.3%
+20:30 USD Core CPI High Forecast: 0.3% Prev: 0.3%"></textarea>
+    <div class="kz-news-input-hint">
+      Định dạng: <code>GIỜ:PHÚT CURRENCY TIÊU_ĐỀ IMPACT [Forecast: X Prev: Y]</code><br>
+      Impact: <code>High</code>, <code>Medium</code>, hoặc <code>Low</code>
+    </div>
+    <div class="kz-news-input-actions">
+      <button class="nx-btn nx-btn-primary" style="font-size:12px; padding:8px 16px" onclick="parseAndSaveNews()">Lưu tin</button>
+      <button class="nx-btn nx-btn-ghost" onclick="clearNews()">Xoá tất cả</button>
+      <span id="newsParseStatus" style="font-size:11px; color:var(--text-muted); margin-left:auto; font-family:var(--font-mono);"></span>
+    </div>
+  </div>
+
+  <div class="kz-news-timeline" id="newsTimeline">
+    <div class="kz-empty">Chưa có tin tức. Bấm "+ Thêm tin" để paste tin hôm nay.</div>
+  </div>
+
+  <!-- Smart Recommendation -->
+  <div class="kz-reco" id="smartReco" style="display:none">
+    <div class="kz-reco-header"></div>
+    <div class="kz-reco-body" id="recoBody"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="nx-footer">
+    Kill Zone theo giờ ICT · Tự động điều chỉnh DST (EDT/EST, BST/GMT)<br>
+    NEXUS — ICT Trading Command Center · v1.0
+  </footer>
+
+    </div>
+  </div>
+</div>
+
+<script src="../shared/utils.js"></script>
+<script src="../shared/store.js"></script>
+<script src="../shared/crypto.js"></script>
+<script src="../shared/sync.js"></script>
+<script src="../shared/nav.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  KILL ZONE DEFINITIONS (UTC-based)
+//  All times in UTC hours. We compute offsets for US/UK DST.
+// ═══════════════════════════════════════════════════
+
+// DST Detection — determines current US and UK offsets
+function getUSDSTOffset() {
+  // US DST: 2nd Sunday March → 1st Sunday November (EDT = UTC-4, EST = UTC-5)
+  const now = new Date();
+  const year = now.getFullYear();
+  // March: 2nd Sunday
+  const marchFirst = new Date(year, 2, 1);
+  const marchDay = marchFirst.getDay();
+  const dstStart = new Date(year, 2, 8 + (7 - marchDay) % 7, 2, 0, 0); // 2am local
+  // November: 1st Sunday
+  const novFirst = new Date(year, 10, 1);
+  const novDay = novFirst.getDay();
+  const dstEnd = new Date(year, 10, 1 + (7 - novDay) % 7, 2, 0, 0);
+  return (now >= dstStart && now < dstEnd) ? -4 : -5;
+}
+
+function getUKDSTOffset() {
+  // UK DST: last Sunday March → last Sunday October (BST = UTC+1, GMT = UTC+0)
+  const now = new Date();
+  const year = now.getFullYear();
+  // March: last Sunday
+  const marchLast = new Date(year, 3, 0); // last day of March
+  const marchSun = marchLast.getDate() - marchLast.getDay();
+  const bstStart = new Date(year, 2, marchSun, 1, 0, 0); // 1am UTC
+  // October: last Sunday
+  const octLast = new Date(year, 10, 0);
+  const octSun = octLast.getDate() - octLast.getDay();
+  const bstEnd = new Date(year, 9, octSun, 1, 0, 0);
+  return (now >= bstStart && now < bstEnd) ? 1 : 0;
+}
+
+// VN timezone is fixed UTC+7
+const VN_OFFSET = 7;
+
+// Kill Zones defined in actual session times (New York local)
+// We convert to VN time dynamically based on DST
+function getKillZones() {
+  const usOffset = getUSDSTOffset(); // -4 (EDT) or -5 (EST)
+  const ukOffset = getUKDSTOffset(); // +1 (BST) or +0 (GMT)
+
+  // Convert NY local hour → VN hour
+  // NY local → UTC: hour - usOffset → +VN_OFFSET
+  // e.g. NY 9:30 EDT(UTC-4): 9:30 + 4 = 13:30 UTC → 13:30 + 7 = 20:30 VN
+  function nyToVN(h, m) {
+    let utcMin = (h * 60 + m) - usOffset * 60;
+    let vnMin = utcMin + VN_OFFSET * 60;
+    if (vnMin < 0) vnMin += 1440;
+    if (vnMin >= 1440) vnMin -= 1440;
+    return vnMin; // minutes from midnight VN
+  }
+
+  // Convert London local hour → VN hour
+  function londonToVN(h, m) {
+    let utcMin = (h * 60 + m) - ukOffset * 60;
+    let vnMin = utcMin + VN_OFFSET * 60;
+    if (vnMin < 0) vnMin += 1440;
+    if (vnMin >= 1440) vnMin -= 1440;
+    return vnMin;
+  }
+
+  return [
+    {
+      id: 'asian',
+      name: 'ASIAN',
+      label: 'Asian Kill Zone',
+      // 7:00 PM → 10:00 PM EST (NY local)
+      startVN: nyToVN(19, 0),
+      endVN: nyToVN(22, 0),
+      crossesMidnight: false,
+      avoid: false,
+      color: 'var(--neutral)',
+    },
+    {
+      id: 'london',
+      name: 'LONDON',
+      label: 'London Kill Zone',
+      // 2:00 AM → 5:00 AM EST (NY local)
+      startVN: nyToVN(2, 0),
+      endVN: nyToVN(5, 0),
+      crossesMidnight: false,
+      avoid: false,
+      color: 'var(--accent)',
+    },
+    {
+      id: 'ny',
+      name: 'NEW YORK',
+      label: 'New York Kill Zone',
+      // 7:00 AM → 9:00 AM EST (NY local)
+      startVN: nyToVN(7, 0),
+      endVN: nyToVN(9, 0),
+      crossesMidnight: false,
+      avoid: false,
+      color: 'var(--bull)',
+    },
+    {
+      id: 'londonclose',
+      name: 'LONDON CLOSE',
+      label: 'London Close Kill Zone',
+      // 10:00 AM → 12:00 PM EST (NY local)
+      startVN: nyToVN(10, 0),
+      endVN: nyToVN(12, 0),
+      crossesMidnight: false,
+      avoid: false,
+      color: 'var(--accent)',
+    },
+  ];
+}
+
+// ═══════════════════════════════════════════════════
+//  TIME UTILITIES
+// ═══════════════════════════════════════════════════
+function formatTime(h, m, s) {
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function formatMinutes(totalMin) {
+  if (totalMin < 0) totalMin += 1440;
+  const h = Math.floor(totalMin / 60) % 24;
+  const m = totalMin % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function minutesDiff(fromMin, toMin, crossesMidnight) {
+  if (crossesMidnight) {
+    if (fromMin >= toMin) return (1440 - fromMin) + toMin;
+  }
+  let diff = toMin - fromMin;
+  if (diff < 0) diff += 1440;
+  return diff;
+}
+
+function isInZone(nowMin, zone) {
+  if (zone.crossesMidnight) {
+    return nowMin >= zone.startVN || nowMin < zone.endVN;
+  }
+  return nowMin >= zone.startVN && nowMin < zone.endVN;
+}
+
+function formatDuration(mins) {
+  if (mins <= 0) return '0 phút';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER KILL ZONES
+// ═══════════════════════════════════════════════════
+function renderZones() {
+  const now = new Date();
+  const vnH = now.getHours();
+  const vnM = now.getMinutes();
+  const nowMin = vnH * 60 + vnM;
+
+  const zones = getKillZones();
+  const container = document.getElementById('kzZones');
+
+  let activeZone = null;
+  let nextZone = null;
+  let nextZoneTime = Infinity;
+
+  // Determine state for each zone
+  const zoneStates = zones.map(z => {
+    const inZone = isInZone(nowMin, z);
+    const duration = minutesDiff(z.startVN, z.endVN, z.crossesMidnight);
+
+    let state, timeLeft, progress;
+
+    if (inZone) {
+      state = z.avoid ? 'avoid' : 'active';
+      if (z.crossesMidnight) {
+        timeLeft = nowMin >= z.startVN
+          ? (1440 - nowMin) + z.endVN
+          : z.endVN - nowMin;
+      } else {
+        timeLeft = z.endVN - nowMin;
+      }
+      const elapsed = duration - timeLeft;
+      progress = Math.min(100, Math.max(0, (elapsed / duration) * 100));
+      if (!z.avoid) activeZone = z;
+    } else {
+      let minsUntil;
+      if (z.crossesMidnight) {
+        minsUntil = nowMin >= z.startVN ? 0 : (z.startVN < nowMin ? 1440 - nowMin + z.startVN : z.startVN - nowMin);
+      } else {
+        minsUntil = z.startVN - nowMin;
+        if (minsUntil < 0) minsUntil += 1440;
+      }
+
+      // Check if zone already passed today
+      let endOfZone = z.endVN;
+      const passed = !z.crossesMidnight && nowMin >= endOfZone;
+
+      state = passed ? 'passed' : 'upcoming';
+      timeLeft = minsUntil;
+      progress = passed ? 100 : 0;
+
+      if (!passed && minsUntil < nextZoneTime && minsUntil > 0) {
+        nextZoneTime = minsUntil;
+        nextZone = z;
+      }
+    }
+
+    return { ...z, state, timeLeft, progress, duration };
+  });
+
+  container.innerHTML = zoneStates.map(z => {
+    let statusText, statusClass;
+    switch (z.state) {
+      case 'active':
+        statusText = `ĐANG ACTIVE — ${formatDuration(z.timeLeft)} còn lại`;
+        statusClass = 'live';
+        break;
+      case 'avoid':
+        statusText = `TRÁNH TRADE — ${formatDuration(z.timeLeft)} còn lại`;
+        statusClass = 'warn';
+        break;
+      case 'upcoming':
+        statusText = `${formatDuration(z.timeLeft)} nữa`;
+        statusClass = 'soon';
+        break;
+      case 'passed':
+        statusText = 'Đã qua';
+        statusClass = 'done';
+        break;
+    }
+
+    const showProgress = z.state === 'active' || z.state === 'avoid';
+
+    return `<div class="kz-zone ${z.state}">
+      <div class="kz-zone-head">
+        <div class="kz-zone-indicator ${z.state}"></div>
+        <span class="kz-zone-name">${z.name}</span>
+        <span class="kz-zone-status ${statusClass}">${statusText}</span>
+        <span class="kz-zone-time">${formatMinutes(z.startVN)} — ${formatMinutes(z.endVN)} VN</span>
+      </div>
+      ${showProgress ? `<div class="kz-progress"><div class="kz-progress-fill ${z.state}" style="width:${z.progress.toFixed(1)}%"></div></div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Update KPIs
+  const kzCurrent = document.getElementById('kpiCurrentZone');
+  const kzTimeLeft = document.getElementById('kpiTimeLeft');
+  const kzNext = document.getElementById('kpiNextZone');
+
+  const activeState = zoneStates.find(z => z.state === 'active');
+  const avoidState = zoneStates.find(z => z.state === 'avoid');
+
+  if (activeState) {
+    kzCurrent.textContent = activeState.name;
+    kzCurrent.style.color = 'var(--bull)';
+    kzTimeLeft.textContent = formatDuration(activeState.timeLeft);
+    kzTimeLeft.style.color = 'var(--bull)';
+  } else if (avoidState) {
+    kzCurrent.textContent = avoidState.name;
+    kzCurrent.style.color = 'var(--warn)';
+    kzTimeLeft.textContent = formatDuration(avoidState.timeLeft);
+    kzTimeLeft.style.color = 'var(--warn)';
+  } else {
+    kzCurrent.textContent = 'Không có';
+    kzCurrent.style.color = 'var(--text-muted)';
+    kzTimeLeft.textContent = '—';
+    kzTimeLeft.style.color = 'var(--text-muted)';
+  }
+
+  if (nextZone) {
+    kzNext.textContent = nextZone.name;
+    kzNext.style.color = 'var(--text-primary)';
+  } else {
+    kzNext.textContent = 'Ngày mai';
+    kzNext.style.color = 'var(--text-muted)';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  LIVE CLOCK
+// ═══════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  document.getElementById('liveClock').textContent = formatTime(h, m, s);
+
+  // Date display
+  const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+  document.getElementById('dateDisplay').textContent =
+    `${days[now.getDay()]}, ${now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+
+  // DST badge
+  const usOffset = getUSDSTOffset();
+  const ukOffset = getUKDSTOffset();
+  const usDST = usOffset === -4 ? 'EDT' : 'EST';
+  const ukDST = ukOffset === 1 ? 'BST' : 'GMT';
+  document.getElementById('dstBadge').textContent = `US: ${usDST} · UK: ${ukDST}`;
+
+  // NY time display
+  const nyDate = new Date(now.toLocaleString('en-US', { timeZone: usOffset === -4 ? 'America/New_York' : 'America/New_York' }));
+  document.getElementById('nyTimeDisplay').textContent = `NY: ${formatTime(nyDate.getHours(), nyDate.getMinutes(), nyDate.getSeconds())}`;
+
+  // Clock icon
+  document.querySelector('.kz-clock-icon').innerHTML = SVG_ICONS.clock;
+}
+
+// ═══════════════════════════════════════════════════
+//  NEWS TIMELINE
+// ═══════════════════════════════════════════════════
+const NEWS_KEY = 'nexus_killzone_news';
+const NEWS_DATE_KEY = 'nexus_killzone_news_date';
+
+function loadNews() {
+  try {
+    const savedDate = localStorage.getItem(NEWS_DATE_KEY);
+    const today = new Date().toISOString().split('T')[0];
+    if (savedDate !== today) return []; // Auto-clear old news
+    return JSON.parse(localStorage.getItem(NEWS_KEY) || '[]');
+  } catch(e) { return []; }
+}
+
+function saveNews(news) {
+  const today = new Date().toISOString().split('T')[0];
+  localStorage.setItem(NEWS_KEY, JSON.stringify(news));
+  localStorage.setItem(NEWS_DATE_KEY, today);
+}
+
+function toggleNewsInput() {
+  const area = document.getElementById('newsInputArea');
+  const btn = document.getElementById('toggleNewsInput');
+  if (area.style.display === 'none') {
+    area.style.display = 'block';
+    btn.innerHTML = SVG_ICONS.x + ' Đóng';
+  } else {
+    area.style.display = 'none';
+    btn.textContent = '+ Thêm tin';
+  }
+}
+
+function parseAndSaveNews() {
+  const raw = document.getElementById('newsTextarea').value.trim();
+  if (!raw) {
+    showToast('Chưa có nội dung để parse', 'warn');
+    return;
+  }
+
+  const lines = raw.split('\n').filter(l => l.trim());
+  const news = [];
+
+  for (const line of lines) {
+    // Pattern: HH:MM CURRENCY TITLE IMPACT [Forecast: X] [Prev: Y]
+    const match = line.match(/^(\d{1,2}:\d{2})\s+([A-Z]{3})\s+(.+?)(?:\s+(High|Medium|Low))(.*)$/i);
+    if (match) {
+      const [, time, currency, title, impact, rest] = match;
+      let forecast = '', prev = '';
+
+      const fMatch = rest.match(/Forecast:\s*([^\s]+)/i);
+      const pMatch = rest.match(/Prev:\s*([^\s]+)/i);
+      if (fMatch) forecast = fMatch[1];
+      if (pMatch) prev = pMatch[1];
+
+      news.push({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 4),
+        time, currency: currency.toUpperCase(),
+        title: title.trim(),
+        impact: impact.charAt(0).toUpperCase() + impact.slice(1).toLowerCase(),
+        forecast, prev
+      });
+    }
+  }
+
+  if (news.length === 0) {
+    showToast('Không parse được tin nào. Kiểm tra định dạng.', 'error');
+    return;
+  }
+
+  // Sort by time
+  news.sort((a, b) => a.time.localeCompare(b.time));
+  saveNews(news);
+  renderNews();
+  showToast(`Đã lưu ${news.length} tin`, 'success');
+  document.getElementById('newsParseStatus').textContent = `${news.length} tin parsed`;
+  document.getElementById('newsTextarea').value = '';
+  toggleNewsInput();
+}
+
+function clearNews() {
+  if (!confirm('Xoá tất cả tin tức hôm nay?')) return;
+  saveNews([]);
+  renderNews();
+  showToast('Đã xoá tin tức', 'warn');
+}
+
+function renderNews() {
+  const news = loadNews();
+  const container = document.getElementById('newsTimeline');
+  document.getElementById('kpiNewsCount').textContent = news.length;
+
+  if (!news.length) {
+    container.innerHTML = '<div class="kz-empty">Chưa có tin tức. Bấm "+ Thêm tin" để paste tin hôm nay.</div>';
+    return;
+  }
+
+  const now = new Date();
+  const nowStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  container.innerHTML = news.map(n => {
+    const isPast = n.time < nowStr;
+    const impactClass = n.impact.toLowerCase();
+    const details = [];
+    if (n.forecast) details.push(`Forecast: ${n.forecast}`);
+    if (n.prev) details.push(`Prev: ${n.prev}`);
+
+    return `<div class="kz-news-item" style="${isPast ? 'opacity:0.5' : ''}">
+      <div class="kz-news-dot ${impactClass}"></div>
+      <div class="kz-news-head">
+        <span class="kz-news-time">${n.time}</span>
+        <span class="kz-news-impact ${impactClass}">${n.impact}</span>
+        <span class="kz-news-currency">${n.currency}</span>
+        <span class="kz-news-title">${n.title}</span>
+      </div>
+      ${details.length ? `<div class="kz-news-details">${details.join(' | ')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  SMART RECOMMENDATION
+// ═══════════════════════════════════════════════════
+function renderRecommendation() {
+  const recoEl = document.getElementById('smartReco');
+  const bodyEl = document.getElementById('recoBody');
+
+  // Get locked weekly bias
+  let biasData = null;
+  try {
+    biasData = JSON.parse(localStorage.getItem('nexus_weekly_bias') || 'null');
+  } catch(e) {}
+
+  // Get daily bias
+  let dailyBias = null;
+  try {
+    dailyBias = JSON.parse(localStorage.getItem('nexus_daily_bias') || 'null');
+  } catch(e) {}
+
+  // Get news
+  const news = loadNews();
+  const highImpact = news.filter(n => n.impact === 'High');
+
+  // Build recommendation
+  const parts = [];
+
+  // Active zone context
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const zones = getKillZones();
+  const activeZone = zones.find(z => isInZone(nowMin, z) && !z.avoid);
+  const avoidZone = zones.find(z => isInZone(nowMin, z) && z.avoid);
+
+  if (avoidZone) {
+    parts.push(`${SVG_ICONS.alertTriangle} Đang trong <span class="highlight">${avoidZone.name}</span> — tránh vào lệnh mới.`);
+  } else if (activeZone) {
+    parts.push(`${SVG_ICONS.checkCircle} <span class="highlight">${activeZone.name}</span> đang active — thời điểm tốt để trade.`);
+  } else {
+    const nextZone = zones.find(z => {
+      if (z.avoid) return false;
+      let minsUntil = z.startVN - nowMin;
+      if (minsUntil < 0) minsUntil += 1440;
+      return minsUntil > 0 && minsUntil < 480;
+    });
+    if (nextZone) {
+      let minsUntil = nextZone.startVN - nowMin;
+      if (minsUntil < 0) minsUntil += 1440;
+      parts.push(`${SVG_ICONS.hourglass} Đợi <span class="highlight">${nextZone.name}</span> — còn ${formatDuration(minsUntil)}.`);
+    }
+  }
+
+  // Weekly bias info
+  if (biasData && biasData.pairs) {
+    const bullish = biasData.pairs.filter(p => p.bias && p.bias.includes('BULL'));
+    const bearish = biasData.pairs.filter(p => p.bias && p.bias.includes('BEAR'));
+    if (bullish.length) {
+      parts.push(`COT Bullish: ${bullish.map(p => `<span class="bull-tag">${p.code}</span>`).join(', ')}`);
+    }
+    if (bearish.length) {
+      parts.push(`COT Bearish: ${bearish.map(p => `<span class="bear-tag">${p.code}</span>`).join(', ')}`);
+    }
+  }
+
+  // High impact news warning
+  if (highImpact.length) {
+    const upcoming = highImpact.filter(n => {
+      const nowStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      return n.time > nowStr;
+    });
+    if (upcoming.length) {
+      parts.push(`${SVG_ICONS.newspaper} ${upcoming.length} tin <span class="bear-tag">HIGH IMPACT</span> sắp tới: ${upcoming.map(n => `${n.time} ${n.currency}`).join(', ')} — cẩn thận spread/volatility.`);
+    }
+  }
+
+  if (parts.length === 0) {
+    recoEl.style.display = 'none';
+    return;
+  }
+
+  recoEl.style.display = 'block';
+  recoEl.querySelector('.kz-reco-header').innerHTML = `${SVG_ICONS.lightbulb} SMART RECOMMENDATION`;
+  bodyEl.innerHTML = parts.map(p => `<p style="margin-bottom:6px">${p}</p>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT & TICK
+// ═══════════════════════════════════════════════════
+function tick() {
+  updateClock();
+  renderZones();
+  renderRecommendation();
+}
+
+// Initial render
+tick();
+renderNews();
+
+// Update every second for clock, every 10s for zones
+setInterval(updateClock, 1000);
+setInterval(() => {
+  renderZones();
+  renderRecommendation();
+}, 10000);
+</script>
+</body>
+</html>

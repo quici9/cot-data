@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Performance Hub</title>
+<meta name="description" content="NEXUS Performance Hub — Phân tích hiệu suất giao dịch: Win Rate, R:R, Expectancy, Breakdown theo pair/session/setup/mood.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+/* ── Performance-specific styles ── */
+.perf-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.perf-header h1 {
+  font-family: var(--font-display); font-size: 28px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--text-primary);
+}
+.perf-header h1 span { color: var(--accent); }
+.perf-period {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.perf-period select {
+  background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 12px; padding: 6px 10px;
+  border-radius: var(--r-sm); outline: none;
+}
+.perf-period select:focus { border-color: var(--accent); }
+
+/* ── KPI Extended ── */
+.kpi-sub {
+  font-size: 11px; color: var(--text-muted); margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+/* ── Breakdown Tabs ── */
+.breakdown-tabs {
+  display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.breakdown-tab {
+  background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary);
+  padding: 8px 16px; border-radius: var(--r-sm); font-size: 12px; cursor: pointer;
+  font-family: var(--font-body); font-weight: 500; transition: all 0.2s;
+}
+.breakdown-tab:hover { border-color: var(--border-bright); color: var(--text-primary); }
+.breakdown-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* ── Breakdown Table ── */
+.bd-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.bd-table th {
+  text-align: left; padding: 10px 12px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.bd-table td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 12px;
+}
+.bd-table tr:hover { background: var(--bg-hover); }
+.bd-bar {
+  height: 6px; border-radius: 3px; background: var(--border);
+  overflow: hidden; min-width: 80px;
+}
+.bd-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+/* ── Insight Cards ── */
+.insight-list { display: flex; flex-direction: column; gap: 10px; }
+.insight-card {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px;
+  border-left: 3px solid var(--accent);
+}
+.insight-card.positive { border-left-color: var(--bull); }
+.insight-card.negative { border-left-color: var(--bear); }
+.insight-card.warning { border-left-color: var(--warn); }
+.insight-icon { flex-shrink: 0; margin-top: 2px; }
+.insight-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+.insight-text strong { color: var(--accent); }
+.insight-text .val-pos { color: var(--bull); font-weight: 700; }
+.insight-text .val-neg { color: var(--bear); font-weight: 700; }
+
+/* ── Prop Firm Tracker ── */
+.prop-card {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 24px; margin-top: 20px;
+}
+.prop-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.prop-title {
+  font-family: var(--font-display); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
+}
+.prop-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 16px;
+}
+.prop-metric { text-align: center; }
+.prop-metric-value {
+  font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--text-primary);
+}
+.prop-metric-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.prop-progress {
+  height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+  margin-top: 8px;
+}
+.prop-progress-fill {
+  height: 100%; border-radius: 4px; transition: width 0.5s ease;
+  background: linear-gradient(90deg, var(--accent), var(--bull));
+}
+.prop-status {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px;
+  border-radius: var(--r-sm); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.prop-status.on-track { background: var(--bull-dim); color: var(--bull); }
+.prop-status.at-risk { background: var(--warn-dim); color: var(--warn); }
+.prop-status.danger { background: var(--bear-dim); color: var(--bear); }
+
+/* ── Prop Settings Modal ── */
+.prop-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.prop-form .form-field { display: flex; flex-direction: column; gap: 4px; }
+.prop-form label { font-size: 11px; color: var(--text-secondary); }
+.prop-form input, .prop-form select {
+  background: var(--bg-primary); border: 1px solid var(--border-bright); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 13px; padding: 8px 10px;
+  border-radius: var(--r-sm); outline: none;
+}
+.prop-form input:focus, .prop-form select:focus { border-color: var(--accent); }
+
+/* ── Canvas Chart ── */
+.chart-wrap {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 16px; margin-bottom: 20px;
+}
+.chart-title {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+canvas { width: 100%; height: 200px; display: block; }
+
+/* ── Section ── */
+.perf-section { margin-bottom: 28px; }
+.perf-section-title {
+  font-family: var(--font-display); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82);
+  z-index: 1000; justify-content: center; align-items: flex-start;
+  padding: 40px 16px; overflow-y: auto;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg-surface); border: 1px solid var(--border-bright); border-radius: var(--r-lg);
+  width: 100%; max-width: 480px; box-shadow: var(--shadow-modal);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.modal-close {
+  background: none; border: none; color: var(--text-muted); font-size: 22px;
+  cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm);
+}
+.modal-close:hover { color: var(--text-primary); background: var(--bg-hover); }
+.modal-body { padding: 20px; }
+.modal-footer {
+  display: flex; gap: 8px; justify-content: flex-end;
+  padding: 16px 20px; border-top: 1px solid var(--border);
+}
+
+/* ── Empty ── */
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-state p { font-size: 14px; margin-bottom: 8px; }
+.empty-state a { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .prop-form { grid-template-columns: 1fr; }
+  .perf-header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="nx-app">
+  <div class="nx-main">
+    <div class="nx-content">
+
+  <div class="perf-header">
+    <h1><a href="../" style="color:inherit;text-decoration:none">NEXUS</a> · <span>Performance</span></h1>
+    <div class="perf-period">
+      <select id="periodFilter" onchange="refresh()">
+        <option value="all">Tất cả</option>
+        <option value="7">7 ngày</option>
+        <option value="30" selected>30 ngày</option>
+        <option value="90">90 ngày</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="nx-kpi-row" id="kpiRow">
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kWR">—</div>
+      <div class="nx-kpi-label">Win Rate</div>
+      <div class="kpi-sub" id="kWRs"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kRR">—</div>
+      <div class="nx-kpi-label">Avg Win RR</div>
+      <div class="kpi-sub" id="kRRs"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kExp">—</div>
+      <div class="nx-kpi-label">Expectancy</div>
+      <div class="kpi-sub" id="kExps"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kNetR">0</div>
+      <div class="nx-kpi-label">Net R</div>
+      <div class="kpi-sub" id="kNetRs"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kMaxDD">—</div>
+      <div class="nx-kpi-label">Max Drawdown</div>
+      <div class="kpi-sub" id="kMaxDDs"></div>
+    </div>
+    <div class="nx-kpi">
+      <div class="nx-kpi-value" id="kComp">—</div>
+      <div class="nx-kpi-label">Avg Compliance</div>
+      <div class="kpi-sub" id="kComps"></div>
+    </div>
+  </div>
+
+  <!-- Equity Curve -->
+  <div class="chart-wrap">
+    <div class="chart-title">Equity Curve (R)</div>
+    <canvas id="equityChart" height="200"></canvas>
+  </div>
+
+  <!-- Breakdown -->
+  <div class="perf-section">
+    <div class="perf-section-title">Breakdown</div>
+    <div class="breakdown-tabs">
+      <button class="breakdown-tab active" onclick="switchTab('pair',this)">Pair</button>
+      <button class="breakdown-tab" onclick="switchTab('session',this)">Session</button>
+      <button class="breakdown-tab" onclick="switchTab('day',this)">Day of Week</button>
+      <button class="breakdown-tab" onclick="switchTab('mood',this)">Mood</button>
+      <button class="breakdown-tab" onclick="switchTab('compliance',this)">Compliance</button>
+    </div>
+    <div class="nx-table-wrap">
+      <table class="bd-table" id="bdTable">
+        <thead id="bdHead"></thead>
+        <tbody id="bdBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="perf-section">
+    <div class="perf-section-title">Auto Insights</div>
+    <div class="insight-list" id="insightList"></div>
+  </div>
+
+  <!-- Prop Firm Tracker -->
+  <div class="perf-section">
+    <div class="perf-section-title">Prop Firm Tracker</div>
+    <div class="prop-card" id="propCard">
+      <div class="prop-header">
+        <span class="prop-title" id="propName">FTMO $100K</span>
+        <button class="nx-btn nx-btn-outline" onclick="openPropModal()" style="padding:6px 12px;font-size:11px;">Cài đặt</button>
+      </div>
+      <div class="prop-grid" id="propGrid"></div>
+      <div class="prop-progress"><div class="prop-progress-fill" id="propBar" style="width:0%"></div></div>
+      <div style="margin-top:12px;text-align:center;" id="propStatusWrap"></div>
+    </div>
+  </div>
+
+  <footer class="nx-footer">
+    Nguồn dữ liệu: Trade Journal (localStorage)<br>
+    NEXUS — ICT Trading Command Center · v1.0
+  </footer>
+
+    </div>
+  </div>
+</div>
+
+<!-- Prop Settings Modal -->
+<div class="modal-overlay" id="propModal" onclick="if(event.target===this)closePropModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Prop Firm Settings</span>
+      <button class="modal-close" onclick="closePropModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="prop-form">
+        <div class="form-field">
+          <label>Prop Firm</label>
+          <select id="pFirm">
+            <option value="FTMO">FTMO</option>
+            <option value="The5ers">The5ers</option>
+            <option value="MFF">MyForexFunds</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Account Size ($)</label>
+          <input type="number" id="pSize" value="100000">
+        </div>
+        <div class="form-field">
+          <label>Profit Target ($)</label>
+          <input type="number" id="pTarget" value="10000">
+        </div>
+        <div class="form-field">
+          <label>Max Daily DD ($)</label>
+          <input type="number" id="pDailyDD" value="5000">
+        </div>
+        <div class="form-field">
+          <label>Max Total DD ($)</label>
+          <input type="number" id="pTotalDD" value="10000">
+        </div>
+        <div class="form-field">
+          <label>Risk per trade ($)</label>
+          <input type="number" id="pRisk" value="500">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="nx-btn nx-btn-outline" onclick="closePropModal()">Huỷ</button>
+      <button class="nx-btn nx-btn-primary" onclick="savePropSettings()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/utils.js"></script>
+<script src="../shared/store.js"></script>
+<script src="../shared/crypto.js"></script>
+<script src="../shared/sync.js"></script>
+<script src="../shared/nav.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let allTrades = [];
+let filtered = [];
+let currentTab = 'pair';
+const PROP_KEY = 'nexus_prop_settings';
+
+function loadTrades() {
+  try { allTrades = JSON.parse(localStorage.getItem('nexus_trades') || '[]'); }
+  catch(e) { allTrades = []; }
+}
+
+function getFiltered() {
+  const days = document.getElementById('periodFilter').value;
+  if (days === 'all') return [...allTrades];
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - parseInt(days));
+  return allTrades.filter(t => t.date && new Date(t.date) >= cutoff);
+}
+
+function getClosed(trades) {
+  return trades.filter(t => t.result && t.result !== 'open');
+}
+
+// ═══════════════════════════════════════════════════
+//  KPIs
+// ═══════════════════════════════════════════════════
+function updateKPIs() {
+  const closed = getClosed(filtered);
+  const wins = closed.filter(t => t.result === 'win');
+  const losses = closed.filter(t => t.result === 'loss');
+  const rrs = closed.filter(t => t.actualRR != null && t.actualRR !== '').map(t => parseFloat(t.actualRR));
+  const winRRs = wins.filter(t => t.actualRR != null).map(t => parseFloat(t.actualRR));
+  const lossRRs = losses.filter(t => t.actualRR != null).map(t => Math.abs(parseFloat(t.actualRR)));
+
+  // Win Rate
+  const wr = closed.length ? (wins.length / closed.length * 100) : 0;
+  const wrEl = document.getElementById('kWR');
+  wrEl.textContent = closed.length ? wr.toFixed(0) + '%' : '—';
+  wrEl.style.color = wr >= 50 ? 'var(--bull)' : wr > 0 ? 'var(--bear)' : '';
+  document.getElementById('kWRs').textContent = closed.length ? `${wins.length}W / ${losses.length}L / ${closed.length - wins.length - losses.length}BE` : '';
+
+  // Avg Win RR
+  const avgWin = winRRs.length ? (winRRs.reduce((a,b)=>a+b,0)/winRRs.length) : 0;
+  document.getElementById('kRR').textContent = winRRs.length ? avgWin.toFixed(1)+'R' : '—';
+  const avgLoss = lossRRs.length ? (lossRRs.reduce((a,b)=>a+b,0)/lossRRs.length) : 0;
+  document.getElementById('kRRs').textContent = lossRRs.length ? `Avg Loss: ${avgLoss.toFixed(1)}R` : '';
+
+  // Expectancy = (WR × AvgWin) - ((1-WR) × AvgLoss)
+  let exp = 0;
+  if (closed.length && winRRs.length) {
+    const wrDec = wins.length / closed.length;
+    exp = (wrDec * avgWin) - ((1 - wrDec) * (avgLoss || 1));
+  }
+  const expEl = document.getElementById('kExp');
+  expEl.textContent = closed.length ? (exp >= 0 ? '+' : '') + exp.toFixed(2) + 'R' : '—';
+  expEl.style.color = exp > 0 ? 'var(--bull)' : exp < 0 ? 'var(--bear)' : '';
+  document.getElementById('kExps').textContent = closed.length ? 'per trade' : '';
+
+  // Net R
+  const netR = rrs.reduce((s,r) => s+r, 0);
+  const netEl = document.getElementById('kNetR');
+  netEl.textContent = rrs.length ? (netR>=0?'+':'') + netR.toFixed(1)+'R' : '0';
+  netEl.style.color = netR > 0 ? 'var(--bull)' : netR < 0 ? 'var(--bear)' : '';
+  document.getElementById('kNetRs').textContent = rrs.length ? `${rrs.length} closed` : '';
+
+  // Max Drawdown (in R)
+  let peak = 0, maxDD = 0, cum = 0;
+  const sorted = [...closed].sort((a,b)=> new Date(a.date||0)-new Date(b.date||0));
+  sorted.forEach(t => {
+    const r = t.actualRR != null ? parseFloat(t.actualRR) : 0;
+    cum += r;
+    if (cum > peak) peak = cum;
+    const dd = peak - cum;
+    if (dd > maxDD) maxDD = dd;
+  });
+  document.getElementById('kMaxDD').textContent = sorted.length ? '-' + maxDD.toFixed(1) + 'R' : '—';
+  document.getElementById('kMaxDDs').textContent = '';
+
+  // Avg Compliance
+  const comps = filtered.filter(t => t.compliance != null).map(t => t.compliance);
+  const avgComp = comps.length ? comps.reduce((a,b)=>a+b,0)/comps.length : 0;
+  const compEl = document.getElementById('kComp');
+  compEl.textContent = comps.length ? Math.round(avgComp) + '%' : '—';
+  compEl.style.color = avgComp >= 80 ? 'var(--bull)' : avgComp >= 50 ? 'var(--accent)' : avgComp > 0 ? 'var(--bear)' : '';
+  document.getElementById('kComps').textContent = comps.length ? `${comps.length} trades` : '';
+}
+
+// ═══════════════════════════════════════════════════
+//  EQUITY CHART (Canvas)
+// ═══════════════════════════════════════════════════
+function drawEquityChart() {
+  const canvas = document.getElementById('equityChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 200;
+  ctx.clearRect(0,0,W,H);
+
+  const closed = getClosed(filtered).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  if (closed.length < 2) {
+    ctx.fillStyle = '#5a6375'; ctx.font = '13px Inter'; ctx.textAlign = 'center';
+    ctx.fillText('Cần ít nhất 2 trades đã đóng', W/2, H/2);
+    return;
+  }
+
+  // Build equity curve
+  const points = [0];
+  closed.forEach(t => {
+    const r = t.actualRR != null ? parseFloat(t.actualRR) : 0;
+    points.push(points[points.length-1] + r);
+  });
+
+  const minY = Math.min(...points), maxY = Math.max(...points);
+  const rangeY = maxY - minY || 1;
+  const pad = {t:20, b:30, l:50, r:20};
+  const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
+
+  const toX = i => pad.l + (i / (points.length-1)) * plotW;
+  const toY = v => pad.t + (1 - (v - minY) / rangeY) * plotH;
+
+  // Grid lines
+  ctx.strokeStyle = '#2a2f3a'; ctx.lineWidth = 0.5;
+  const gridN = 4;
+  for (let i = 0; i <= gridN; i++) {
+    const val = minY + (rangeY * i / gridN);
+    const y = toY(val);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#5a6375'; ctx.font = '10px Space Mono'; ctx.textAlign = 'right';
+    ctx.fillText((val>=0?'+':'') + val.toFixed(1)+'R', pad.l-6, y+3);
+  }
+
+  // Zero line
+  if (minY < 0 && maxY > 0) {
+    ctx.strokeStyle = '#5a637550'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    const zy = toY(0);
+    ctx.beginPath(); ctx.moveTo(pad.l, zy); ctx.lineTo(W-pad.r, zy); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Area fill
+  const lastVal = points[points.length-1];
+  const gradColor = lastVal >= 0 ? [92,200,160] : [224,92,92];
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H-pad.b);
+  grad.addColorStop(0, `rgba(${gradColor},0.25)`);
+  grad.addColorStop(1, `rgba(${gradColor},0.02)`);
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.moveTo(toX(0), toY(0));
+  points.forEach((v,i) => ctx.lineTo(toX(i), toY(v)));
+  ctx.lineTo(toX(points.length-1), toY(0)); ctx.closePath(); ctx.fill();
+
+  // Line
+  ctx.strokeStyle = lastVal >= 0 ? '#5cc8a0' : '#e05c5c';
+  ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  points.forEach((v,i) => { i===0 ? ctx.moveTo(toX(i),toY(v)) : ctx.lineTo(toX(i),toY(v)); });
+  ctx.stroke();
+
+  // Dots
+  points.forEach((v,i) => {
+    if (i === 0) return;
+    const r = points[i] - points[i-1];
+    ctx.fillStyle = r >= 0 ? '#5cc8a0' : '#e05c5c';
+    ctx.beginPath(); ctx.arc(toX(i), toY(v), 3, 0, Math.PI*2); ctx.fill();
+  });
+
+  // End label
+  ctx.fillStyle = lastVal >= 0 ? '#5cc8a0' : '#e05c5c';
+  ctx.font = 'bold 12px Space Mono'; ctx.textAlign = 'left';
+  ctx.fillText((lastVal>=0?'+':'')+lastVal.toFixed(1)+'R', toX(points.length-1)+8, toY(lastVal)+4);
+}
+
+// ═══════════════════════════════════════════════════
+//  BREAKDOWN
+// ═══════════════════════════════════════════════════
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.breakdown-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBreakdown();
+}
+
+function renderBreakdown() {
+  const closed = getClosed(filtered);
+  const head = document.getElementById('bdHead');
+  const body = document.getElementById('bdBody');
+
+  head.innerHTML = '<tr><th>Category</th><th>Trades</th><th>Win Rate</th><th>Avg RR</th><th>Net R</th><th>Visual</th></tr>';
+
+  // Group by current tab
+  const groups = {};
+  const DOW = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+
+  closed.forEach(t => {
+    let key;
+    switch(currentTab) {
+      case 'pair': key = t.pair || 'N/A'; break;
+      case 'session': key = t.session || 'N/A'; break;
+      case 'day': key = t.date ? DOW[new Date(t.date).getDay()] : 'N/A'; break;
+      case 'mood': key = t.mood || 'N/A'; break;
+      case 'compliance':
+        const c = t.compliance != null ? t.compliance : -1;
+        key = c >= 80 ? '≥80% (High)' : c >= 50 ? '50-79% (Mid)' : c >= 0 ? '<50% (Low)' : 'N/A';
+        break;
+    }
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  if (!Object.keys(groups).length) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px;">Chưa có dữ liệu</td></tr>';
+    return;
+  }
+
+  // Sort by netR desc
+  const entries = Object.entries(groups).map(([k,trades]) => {
+    const wins = trades.filter(t=>t.result==='win').length;
+    const wr = trades.length ? (wins/trades.length*100) : 0;
+    const rrs = trades.filter(t=>t.actualRR!=null&&t.actualRR!=='').map(t=>parseFloat(t.actualRR));
+    const winRRs = trades.filter(t=>t.result==='win'&&t.actualRR!=null).map(t=>parseFloat(t.actualRR));
+    const avgRR = winRRs.length ? winRRs.reduce((a,b)=>a+b,0)/winRRs.length : 0;
+    const netR = rrs.reduce((s,r)=>s+r,0);
+    return { key:k, count:trades.length, wr, avgRR, netR };
+  });
+  entries.sort((a,b)=>b.netR-a.netR);
+
+  const maxNet = Math.max(...entries.map(e=>Math.abs(e.netR)), 1);
+
+  body.innerHTML = entries.map(e => {
+    const wrColor = e.wr >= 50 ? 'var(--bull)' : 'var(--bear)';
+    const netColor = e.netR >= 0 ? 'var(--bull)' : 'var(--bear)';
+    const barW = Math.abs(e.netR) / maxNet * 100;
+    const barColor = e.netR >= 0 ? 'var(--bull)' : 'var(--bear)';
+    return `<tr>
+      <td style="color:var(--text-primary);font-family:var(--font-body);font-weight:600;">${e.key}</td>
+      <td>${e.count}</td>
+      <td style="color:${wrColor}">${e.wr.toFixed(0)}%</td>
+      <td>${e.avgRR ? e.avgRR.toFixed(1)+'R' : '—'}</td>
+      <td style="color:${netColor};font-weight:700">${(e.netR>=0?'+':'')}${e.netR.toFixed(1)}R</td>
+      <td><div class="bd-bar"><div class="bd-bar-fill" style="width:${barW}%;background:${barColor}"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  INSIGHTS
+// ═══════════════════════════════════════════════════
+function renderInsights() {
+  const list = document.getElementById('insightList');
+  const closed = getClosed(filtered);
+  const insights = [];
+
+  if (closed.length < 3) {
+    list.innerHTML = '<div class="empty-state"><p>Cần ít nhất 3 trades đã đóng để tạo insights.</p></div>';
+    return;
+  }
+
+  // Best pair
+  const pairGroups = {};
+  closed.forEach(t => { const k = t.pair||'?'; if(!pairGroups[k])pairGroups[k]=[]; pairGroups[k].push(t); });
+  let bestPair = null, bestPairWR = 0, bestPairCount = 0;
+  Object.entries(pairGroups).forEach(([p,ts]) => {
+    if (ts.length < 2) return;
+    const wr = ts.filter(t=>t.result==='win').length / ts.length * 100;
+    if (wr > bestPairWR || (wr === bestPairWR && ts.length > bestPairCount)) {
+      bestPair = p; bestPairWR = wr; bestPairCount = ts.length;
+    }
+  });
+  if (bestPair) {
+    insights.push({ type:'positive', icon: SVG_ICONS.zap,
+      text:`Pair tốt nhất: <strong>${bestPair}</strong> — Win Rate <span class="val-pos">${bestPairWR.toFixed(0)}%</span> (${bestPairCount} trades)` });
+  }
+
+  // Worst pair
+  let worstPair = null, worstWR = 100;
+  Object.entries(pairGroups).forEach(([p,ts]) => {
+    if (ts.length < 2) return;
+    const wr = ts.filter(t=>t.result==='win').length / ts.length * 100;
+    if (wr < worstWR) { worstPair = p; worstWR = wr; }
+  });
+  if (worstPair && worstPair !== bestPair) {
+    insights.push({ type:'negative', icon: SVG_ICONS.alertTriangle,
+      text:`Pair cần cải thiện: <strong>${worstPair}</strong> — Win Rate <span class="val-neg">${worstWR.toFixed(0)}%</span>` });
+  }
+
+  // Session analysis
+  const sessGroups = {};
+  closed.forEach(t => { const k = t.session||'?'; if(!sessGroups[k])sessGroups[k]=[]; sessGroups[k].push(t); });
+  let bestSess = null, bestSessWR = 0;
+  Object.entries(sessGroups).forEach(([s,ts]) => {
+    if (ts.length < 2) return;
+    const wr = ts.filter(t=>t.result==='win').length / ts.length * 100;
+    if (wr > bestSessWR) { bestSess = s; bestSessWR = wr; }
+  });
+  if (bestSess) {
+    insights.push({ type:'positive', icon: SVG_ICONS.clock,
+      text:`Session hiệu quả nhất: <strong>${bestSess}</strong> — <span class="val-pos">${bestSessWR.toFixed(0)}%</span> win rate` });
+  }
+
+  // High compliance correlation
+  const highComp = closed.filter(t => t.compliance != null && t.compliance >= 80);
+  const lowComp = closed.filter(t => t.compliance != null && t.compliance < 50);
+  if (highComp.length >= 2) {
+    const hcWR = highComp.filter(t=>t.result==='win').length / highComp.length * 100;
+    insights.push({ type: hcWR >= 60 ? 'positive' : 'warning', icon: SVG_ICONS.zap,
+      text:`Compliance ≥80%: Win Rate <span class="${hcWR>=60?'val-pos':'val-neg'}">${hcWR.toFixed(0)}%</span> (${highComp.length} trades)` });
+  }
+  if (lowComp.length >= 2) {
+    const lcWR = lowComp.filter(t=>t.result==='win').length / lowComp.length * 100;
+    insights.push({ type:'negative', icon: SVG_ICONS.alertTriangle,
+      text:`Compliance <50%: Win Rate <span class="val-neg">${lcWR.toFixed(0)}%</span> — Tăng compliance để cải thiện kết quả` });
+  }
+
+  // Mood insight
+  const moodGroups = {};
+  closed.filter(t=>t.mood).forEach(t => { if(!moodGroups[t.mood])moodGroups[t.mood]=[]; moodGroups[t.mood].push(t); });
+  const badMoods = ['FOMO', 'Revenge', 'Anxious'];
+  badMoods.forEach(m => {
+    const ts = moodGroups[m];
+    if (ts && ts.length >= 2) {
+      const wr = ts.filter(t=>t.result==='win').length / ts.length * 100;
+      insights.push({ type:'warning', icon: SVG_ICONS.lightbulb,
+        text:`Mood "${m}": Win Rate <span class="${wr<50?'val-neg':'val-pos'}">${wr.toFixed(0)}%</span> — ${wr<50?'Cân nhắc không trade khi cảm xúc này':'Kiểm soát tốt!'}` });
+    }
+  });
+
+  if (!insights.length) {
+    list.innerHTML = '<div class="empty-state"><p>Cần thêm dữ liệu để tạo insights.</p></div>';
+    return;
+  }
+
+  list.innerHTML = insights.map(ins =>
+    `<div class="insight-card ${ins.type}">
+      <span class="insight-icon">${ins.icon}</span>
+      <div class="insight-text">${ins.text}</div>
+    </div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  PROP FIRM TRACKER
+// ═══════════════════════════════════════════════════
+function loadPropSettings() {
+  try { return JSON.parse(localStorage.getItem(PROP_KEY)) || defaultProp(); }
+  catch(e) { return defaultProp(); }
+}
+function defaultProp() {
+  return { firm:'FTMO', size:100000, target:10000, dailyDD:5000, totalDD:10000, risk:500 };
+}
+function openPropModal() {
+  const s = loadPropSettings();
+  document.getElementById('pFirm').value = s.firm;
+  document.getElementById('pSize').value = s.size;
+  document.getElementById('pTarget').value = s.target;
+  document.getElementById('pDailyDD').value = s.dailyDD;
+  document.getElementById('pTotalDD').value = s.totalDD;
+  document.getElementById('pRisk').value = s.risk;
+  document.getElementById('propModal').classList.add('show');
+}
+function closePropModal() { document.getElementById('propModal').classList.remove('show'); }
+function savePropSettings() {
+  const s = {
+    firm: document.getElementById('pFirm').value,
+    size: parseFloat(document.getElementById('pSize').value) || 100000,
+    target: parseFloat(document.getElementById('pTarget').value) || 10000,
+    dailyDD: parseFloat(document.getElementById('pDailyDD').value) || 5000,
+    totalDD: parseFloat(document.getElementById('pTotalDD').value) || 10000,
+    risk: parseFloat(document.getElementById('pRisk').value) || 500,
+  };
+  localStorage.setItem(PROP_KEY, JSON.stringify(s));
+  closePropModal();
+  renderPropTracker();
+  showToast(`${SVG_ICONS.check} Đã lưu Prop Firm settings`);
+}
+
+function renderPropTracker() {
+  const s = loadPropSettings();
+  document.getElementById('propName').textContent = `${s.firm} $${(s.size/1000).toFixed(0)}K`;
+
+  const closed = getClosed(filtered);
+  const rrs = closed.filter(t=>t.actualRR!=null&&t.actualRR!=='').map(t=>parseFloat(t.actualRR));
+  const netR = rrs.reduce((a,b)=>a+b, 0);
+  const pnl = netR * s.risk;
+  const progress = Math.max(0, Math.min(100, (pnl / s.target) * 100));
+
+  // Daily DD calc
+  const today = new Date().toISOString().split('T')[0];
+  const todayTrades = closed.filter(t => t.date === today);
+  const todayRRs = todayTrades.filter(t=>t.actualRR!=null).map(t=>parseFloat(t.actualRR));
+  const todayPnl = todayRRs.reduce((a,b)=>a+b,0) * s.risk;
+
+  // Max consecutive loss
+  let maxDDR = 0, peak = 0, cum = 0;
+  const sorted = [...closed].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  sorted.forEach(t => {
+    cum += (t.actualRR != null ? parseFloat(t.actualRR) : 0);
+    if(cum>peak) peak=cum;
+    if(peak-cum > maxDDR) maxDDR = peak-cum;
+  });
+  const maxDDDollar = maxDDR * s.risk;
+
+  const grid = document.getElementById('propGrid');
+  grid.innerHTML = `
+    <div class="prop-metric">
+      <div class="prop-metric-value" style="color:${pnl>=0?'var(--bull)':'var(--bear)'}">${pnl>=0?'+':''}$${Math.abs(pnl).toLocaleString()}</div>
+      <div class="prop-metric-label">Current P/L</div>
+    </div>
+    <div class="prop-metric">
+      <div class="prop-metric-value">$${s.target.toLocaleString()}</div>
+      <div class="prop-metric-label">Target</div>
+    </div>
+    <div class="prop-metric">
+      <div class="prop-metric-value" style="color:${todayPnl<0?'var(--bear)':'var(--text-primary)'}">$${Math.abs(todayPnl).toLocaleString()}</div>
+      <div class="prop-metric-label">Today P/L</div>
+    </div>
+    <div class="prop-metric">
+      <div class="prop-metric-value" style="color:${maxDDDollar > s.totalDD*0.7?'var(--bear)':'var(--text-primary)'}">$${maxDDDollar.toLocaleString()}</div>
+      <div class="prop-metric-label">Max DD / $${s.totalDD.toLocaleString()}</div>
+    </div>
+  `;
+
+  document.getElementById('propBar').style.width = Math.max(0,progress) + '%';
+
+  // Status
+  let status, statusClass;
+  if (maxDDDollar >= s.totalDD) { status = 'FAILED'; statusClass = 'danger'; }
+  else if (pnl >= s.target) { status = 'TARGET REACHED'; statusClass = 'on-track'; }
+  else if (maxDDDollar >= s.totalDD * 0.7) { status = 'AT RISK'; statusClass = 'at-risk'; }
+  else { status = 'ON TRACK'; statusClass = 'on-track'; }
+  document.getElementById('propStatusWrap').innerHTML =
+    `<span class="prop-status ${statusClass}">● ${status}</span>
+     <span style="margin-left:12px;font-size:12px;color:var(--text-muted)">${progress.toFixed(0)}% to target</span>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  REFRESH ALL
+// ═══════════════════════════════════════════════════
+function refresh() {
+  loadTrades();
+  filtered = getFiltered();
+
+  if (!allTrades.length) {
+    document.getElementById('kpiRow').nextElementSibling; // no-op
+    const content = document.querySelector('.nx-content');
+    // Show empty state only if truly empty
+    const emptyCheck = document.getElementById('emptyMain');
+    if (!emptyCheck && !allTrades.length) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.id = 'emptyMain';
+      emptyDiv.className = 'empty-state';
+      emptyDiv.innerHTML = `<div class="empty-icon">${SVG_ICONS.trendingUp}</div>
+        <p>Chưa có trade nào trong Journal.</p>
+        <p><a href="../journal/index.html">→ Vào Trade Journal để thêm trades</a></p>`;
+      document.getElementById('kpiRow').after(emptyDiv);
+    }
+  } else {
+    const emptyCheck = document.getElementById('emptyMain');
+    if (emptyCheck) emptyCheck.remove();
+  }
+
+  updateKPIs();
+  drawEquityChart();
+  renderBreakdown();
+  renderInsights();
+  renderPropTracker();
+}
+
+// Resize chart on window resize
+window.addEventListener('resize', () => { if(filtered.length) drawEquityChart(); });
+
+// Init
+refresh();
+</script>
+</body>
+</html>
