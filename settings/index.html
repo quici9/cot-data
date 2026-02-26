@@ -228,6 +228,12 @@
             <div class="field-hint">Dùng chung mật khẩu này trên tất cả thiết bị. <b>Nếu quên, không thể khôi phục dữ liệu từ cloud.</b></div>
           </div>
 
+          <div class="field-group">
+            <label>Gist ID <span style="font-weight:400;color:var(--text-muted)">(tùy chọn — chỉ cần khi kết nối thiết bị mới)</span></label>
+            <input type="text" class="field-input" id="gistIdInput" placeholder="Tự động tìm — hoặc dán Gist ID thủ công" autocomplete="off">
+            <div class="field-hint">Nếu để trống, hệ thống sẽ tự tìm Gist cũ. Nếu không tìm được, hãy lấy Gist ID từ thiết bị cũ (Settings → Gist ID) và dán vào đây.</div>
+          </div>
+
           <div class="btn-row">
             <button class="btn btn-primary" id="connectBtn" onclick="handleConnect()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
@@ -324,6 +330,7 @@ function toggleTokenVis() {
 async function handleConnect() {
   const token = document.getElementById('tokenInput').value.trim();
   const password = document.getElementById('passwordInput').value;
+  const manualGistId = document.getElementById('gistIdInput').value.trim();
 
   if (!token) { toast('Vui lòng nhập GitHub Token', 'error'); return; }
   if (!password || password.length < 4) { toast('Mật khẩu cần ít nhất 4 ký tự', 'error'); return; }
@@ -333,9 +340,26 @@ async function handleConnect() {
   btn.textContent = 'Đang kết nối...';
 
   try {
+    // If user provided a manual Gist ID, set it before init
+    if (manualGistId) {
+      SyncEngine.setGistId(manualGistId);
+    }
+
     const result = await SyncEngine.init(token, password);
     if (result.success) {
       toast(result.message);
+
+      // Auto-pull if an existing Gist was found/set (new device scenario)
+      if (manualGistId || result.message.includes('Gist cũ')) {
+        try {
+          toast('Đang tải dữ liệu từ cloud...');
+          await SyncEngine.pull();
+          toast('Đã tải dữ liệu từ cloud thành công!');
+        } catch (pullErr) {
+          toast('Kết nối OK nhưng tải dữ liệu thất bại: ' + pullErr.message, 'error');
+        }
+      }
+
       refreshUI();
     } else {
       toast(result.message, 'error');

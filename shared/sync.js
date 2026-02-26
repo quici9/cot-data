@@ -138,6 +138,35 @@ const SyncEngine = (() => {
         }
     }
 
+    /**
+     * Search the user's existing Gists for one containing GIST_FILENAME
+     * Paginated — checks up to 10 pages (300 gists)
+     * @returns {Promise<string|null>} Found Gist ID or null
+     */
+    async function _findExistingGist() {
+        const maxPages = 10;
+        for (let page = 1; page <= maxPages; page++) {
+            try {
+                const res = await fetch(`${GIST_API}?per_page=30&page=${page}`, {
+                    headers: _headers()
+                });
+                if (!res.ok) break;
+                const gists = await res.json();
+                if (!gists.length) break;
+
+                for (const gist of gists) {
+                    if (gist.files && gist.files[GIST_FILENAME]) {
+                        return gist.id;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Sync] Error searching gists page', page, e);
+                break;
+            }
+        }
+        return null;
+    }
+
     // ── Core sync logic ─────────────────────────
 
     /**
@@ -266,8 +295,23 @@ const SyncEngine = (() => {
 
         // Check if we already have a Gist ID
         let gistId = _getGistId();
+        let foundExisting = false;
+
         if (!gistId) {
-            // Create initial Gist with empty encrypted payload
+            // STEP 1: Search for existing Gist with nexus-sync.json
+            try {
+                gistId = await _findExistingGist();
+                if (gistId) {
+                    foundExisting = true;
+                    localStorage.setItem(CFG.GIST_ID, gistId);
+                }
+            } catch (e) {
+                console.warn('[Sync] Could not search existing gists:', e);
+            }
+        }
+
+        if (!gistId) {
+            // STEP 2: No existing Gist found — create a new one
             try {
                 const payload = JSON.stringify({ v: SYNC_VERSION, ts: new Date().toISOString(), data: {} });
                 const encrypted = await NexusCrypto.encrypt(payload, password);
@@ -280,6 +324,10 @@ const SyncEngine = (() => {
         }
 
         localStorage.setItem(CFG.ENABLED, 'true');
+
+        if (foundExisting) {
+            return { success: true, message: `Kết nối thành công! User: ${conn.username} — Đã tìm thấy Gist cũ, sẵn sàng đồng bộ.` };
+        }
         return { success: true, message: `Kết nối thành công! User: ${conn.username}` };
     }
 
@@ -291,6 +339,23 @@ const SyncEngine = (() => {
         localStorage.removeItem(CFG.PASSWORD);
         localStorage.removeItem(CFG.ENABLED);
         // Keep GIST_ID so reconnecting can reuse the same Gist
+    }
+
+    /**
+     * Manually set the Gist ID (for connecting from a new device)
+     * @param {string} gistId
+     */
+    function setGistId(gistId) {
+        if (gistId && gistId.trim()) {
+            localStorage.setItem(CFG.GIST_ID, gistId.trim());
+        }
+    }
+
+    /**
+     * Get the current Gist ID
+     */
+    function getGistId() {
+        return _getGistId();
     }
 
     /**
@@ -468,6 +533,8 @@ const SyncEngine = (() => {
         markDirty,
         getStatus,
         getLastSync,
+        getGistId,
+        setGistId,
         testConnection,
         exportAll,
         importAll,
