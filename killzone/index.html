@@ -395,51 +395,22 @@ function getKillZones() {
     return vnMin;
   }
 
+  // Build zones and auto-detect crossesMidnight based on VN times
+  function makeZone(id, name, label, startMin, endMin, avoid, color) {
+    // If endVN <= startVN, the zone crosses midnight in VN time
+    const crossesMidnight = endMin <= startMin;
+    return { id, name, label, startVN: startMin, endVN: endMin, crossesMidnight, avoid, color };
+  }
+
   return [
-    {
-      id: 'asian',
-      name: 'ASIAN',
-      label: 'Asian Kill Zone',
-      // 7:00 PM → 10:00 PM EST (NY local)
-      startVN: nyToVN(19, 0),
-      endVN: nyToVN(22, 0),
-      crossesMidnight: false,
-      avoid: false,
-      color: 'var(--neutral)',
-    },
-    {
-      id: 'london',
-      name: 'LONDON',
-      label: 'London Kill Zone',
-      // 2:00 AM → 5:00 AM EST (NY local)
-      startVN: nyToVN(2, 0),
-      endVN: nyToVN(5, 0),
-      crossesMidnight: false,
-      avoid: false,
-      color: 'var(--accent)',
-    },
-    {
-      id: 'ny',
-      name: 'NEW YORK',
-      label: 'New York Kill Zone',
-      // 7:00 AM → 9:00 AM EST (NY local)
-      startVN: nyToVN(7, 0),
-      endVN: nyToVN(9, 0),
-      crossesMidnight: false,
-      avoid: false,
-      color: 'var(--bull)',
-    },
-    {
-      id: 'londonclose',
-      name: 'LONDON CLOSE',
-      label: 'London Close Kill Zone',
-      // 10:00 AM → 12:00 PM EST (NY local)
-      startVN: nyToVN(10, 0),
-      endVN: nyToVN(12, 0),
-      crossesMidnight: false,
-      avoid: false,
-      color: 'var(--accent)',
-    },
+    makeZone('asian', 'ASIAN', 'Asian Kill Zone',
+      nyToVN(19, 0), nyToVN(22, 0), false, 'var(--neutral)'),
+    makeZone('london', 'LONDON', 'London Kill Zone',
+      nyToVN(2, 0), nyToVN(5, 0), false, 'var(--accent)'),
+    makeZone('ny', 'NEW YORK', 'New York Kill Zone',
+      nyToVN(7, 0), nyToVN(9, 0), false, 'var(--bull)'),
+    makeZone('londonclose', 'LONDON CLOSE', 'London Close Kill Zone',
+      nyToVN(10, 0), nyToVN(12, 0), false, 'var(--accent)'),
   ];
 }
 

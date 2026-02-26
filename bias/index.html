@@ -61,7 +61,7 @@
 .db-step-status.auto { color: var(--accent); background: var(--accent-dim); }
 .db-step-status.pending { color: var(--text-muted); background: var(--bg-hover); }
 
-.db-step-body { /* no base styles — collapsed state hides via .collapsed */ }
+/* .db-step-body has no base styles — collapsed state hides content */
 .db-step-body.collapsed { display: none; }
 
 /* ── Pair Selector (Step 1) ── */
@@ -1443,8 +1443,11 @@ function saveDailyBias() {
       cotBias: cotBiasData[p] || null,
     })),
     assessment: assessmentData,
-    confidence: parseInt(document.getElementById('confLabel')?.textContent === 'HIGH' ? 80 :
-                         document.getElementById('confLabel')?.textContent === 'MEDIUM' ? 55 : 30),
+    confidence: (() => {
+      let total = 0, count = 0;
+      selectedPairs.forEach(p => { if (finalBiases[p]) { total += calcPairConfidence(p); count++; } });
+      return count > 0 ? Math.round(total / count) : 0;
+    })(),
     savedAt: new Date().toISOString(),
   };
 

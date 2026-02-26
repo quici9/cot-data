@@ -45,7 +45,6 @@
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 24px; }
   .card-label { font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
 
-  .input-group { display: flex; flex-direction: column; gap: 12px; }
   .field { display: flex; flex-direction: column; gap: 5px; }
   label { font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
 
@@ -71,46 +70,9 @@
   .btn-calc:hover { opacity: 0.85; }
   .btn-calc:active { transform: scale(0.99); }
 
-  /* Result */
-  .result-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 4px; padding: 26px; margin-bottom: 16px; display: none;
-  }
-  .result-card.show { display: block; }
-  .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-  .result-pair { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  .result-index { font-family: 'Syne', sans-serif; font-size: 50px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
-  .bias-badge { display: inline-block; padding: 3px 12px; border-radius: 2px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 6px; }
-  .signal-text { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
-  .formula-line { font-size: 13px; color: var(--muted); line-height: 1.8; }
-  .formula-line span { color: var(--accent); }
 
-  .gauge-wrap { margin: 20px 0 16px; }
-  .gauge-track { height: 6px; border-radius: 3px; position: relative; margin-bottom: 6px;
-    background: linear-gradient(90deg, var(--red) 0%, var(--red) 10%, var(--yellow) 25%, var(--yellow) 40%, var(--neutral) 50%, var(--yellow) 60%, var(--green) 75%, var(--green) 90%, #3dffc8 100%);
-  }
-  .gauge-needle { position: absolute; top: -5px; width: 3px; height: 16px; background: #fff; border-radius: 2px; transform: translateX(-50%); transition: left 0.6s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 0 8px rgba(255,255,255,0.6); }
-  .gauge-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
-  .divider { height: 1px; background: var(--border); margin: 18px 0; }
 
-  /* History */
-  .history-section { margin-top: 4px; max-height: 340px; overflow-y: auto; }
-  .history-item {
-    display: flex; align-items: center; padding: 8px 0;
-    border-bottom: 1px solid var(--border); font-size: 13px; gap: 6px;
-  }
-  .history-item:last-child { border-bottom: none; }
-  .h-date { color: var(--muted); width: 46px; flex-shrink: 0; font-size: 12px; }
-  .h-pair { color: var(--text); width: 56px; flex-shrink: 0; font-weight: 700; }
-  .h-index { font-weight: 700; width: 48px; flex-shrink: 0; text-align: right; }
-  .h-badge-wrap { flex: 1; min-width: 0; }
-  .h-del {
-    background: none; border: none; color: var(--muted); cursor: pointer;
-    font-size: 16px; padding: 2px 6px; border-radius: 2px; line-height: 1;
-    transition: color 0.15s, background 0.15s; flex-shrink: 0;
-  }
-  .h-del:hover { color: var(--red); background: rgba(224,92,92,0.1); }
-  .no-history { color: var(--muted); font-size: 14px; padding: 20px 0; text-align: center; }
+
 
   .btn-row { display: flex; gap: 8px; margin-top: 12px; }
   .btn-sm {
@@ -180,45 +142,7 @@
   .pairs-section-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
   .pair-chip { display: inline-block; padding: 3px 8px; border-radius: 2px; font-size: 13px; font-weight: 700; margin: 2px 2px; letter-spacing: 0.03em; }
 
-  .progress-bar { height: 2px; background: var(--border); margin-bottom: 12px; border-radius: 1px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
-  .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
 
-
-  /* Matrix input panel */
-  .matrix-input-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
-  .matrix-input-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-  .matrix-input-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-  .matrix-row-inputs { display: grid; grid-template-columns: 105px 1fr 1fr 1fr 1fr 1fr auto; gap: 6px; align-items: end; margin-bottom: 6px; }
-  @media (max-width: 700px) { .matrix-row-inputs { grid-template-columns: 1fr 1fr 1fr; } }
-  .matrix-row-inputs label { font-size: 11px; }
-  .matrix-row-inputs .field { gap: 3px; }
-  .matrix-row-inputs input { font-size: 14px; padding: 7px 8px; }
-  .btn-add-row {
-    background: rgba(200,169,110,0.1); border: 1px solid var(--accent);
-    color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px;
-    letter-spacing: 0.08em; padding: 7px 12px; border-radius: 2px; cursor: pointer;
-    white-space: nowrap; transition: background 0.2s; align-self: end;
-  }
-  .btn-add-row:hover { background: rgba(200,169,110,0.2); }
-  .matrix-entries { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
-  .matrix-entry-row {
-    display: flex; align-items: center; gap: 6px; padding: 6px 10px;
-    background: var(--bg); border: 1px solid var(--border); border-radius: 2px; font-size: 13px;
-  }
-  .entry-pair { font-weight: 700; width: 50px; flex-shrink: 0; }
-  .entry-vals { flex: 1; color: var(--muted); font-size: 12px; }
-  .entry-idx { font-weight: 700; }
-  .entry-del { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 2px; font-size: 16px; transition: color 0.15s; }
-  .entry-del:hover { color: var(--red); }
-  .btn-gen-matrix {
-    width: 100%; background: var(--accent); color: #0a0c0f;
-    border: none; font-family: 'Syne', sans-serif; font-weight: 700;
-    font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 12px; border-radius: 2px; cursor: pointer; transition: opacity 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .btn-gen-matrix:hover { opacity: 0.85; }
   /* ── GITHUB CONFIG BANNER ─────────────────────────── */
   .gh-config-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
@@ -325,10 +249,7 @@
     color: var(--green); background: rgba(92,200,160,0.1);
     border: 1px solid rgba(92,200,160,0.2);
   }
-  .data-source-badge.manual {
-    color: var(--muted); background: rgba(136,153,187,0.08);
-    border: 1px solid rgba(136,153,187,0.15);
-  }
+
 
   /* ── EXPORT PANEL ─────────────────────────────────── */
   .export-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 16px; display: none; }
@@ -479,167 +400,7 @@
   .ap-saved-hint { font-size: 11px; color: var(--green); margin-top: 6px; opacity: 0; transition: opacity 0.3s; }
   .ap-saved-hint.show { opacity: 1; }
 
-  /* ── IMPORT MODAL ─────────────────────────────────── */
-  .imp-overlay {
-    position: fixed; inset: 0; z-index: 900;
-    background: rgba(0,0,0,0.92); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .imp-overlay.show { opacity: 1; pointer-events: auto; }
 
-  .imp-modal {
-    background: var(--surface); border: 1px solid var(--border-bright);
-    border-radius: 6px; width: 92%; max-width: 720px; max-height: 88vh;
-    display: flex; flex-direction: column; overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,169,110,0.06);
-  }
-
-  .imp-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px; border-bottom: 1px solid var(--border);
-  }
-  .imp-title {
-    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
-  }
-  .imp-close {
-    background: none; border: none; color: var(--muted); font-size: 20px;
-    cursor: pointer; padding: 4px 8px; border-radius: 2px; line-height: 1;
-    transition: color 0.15s, background 0.15s;
-  }
-  .imp-close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-
-  .imp-method-tabs {
-    display: flex; gap: 0; border-bottom: 1px solid var(--border);
-  }
-  .imp-method-btn {
-    flex: 1; font-family: 'Space Mono', monospace; font-size: 12px;
-    letter-spacing: 0.06em; padding: 10px 10px 9px; background: none;
-    border: none; border-bottom: 2px solid transparent;
-    color: var(--muted); cursor: pointer; text-align: center;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
-    white-space: nowrap;
-  }
-  .imp-method-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.02); }
-  .imp-method-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .imp-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
-
-  .imp-panel { display: none; }
-  .imp-panel.active { display: block; }
-
-  .imp-label {
-    font-size: 12px; color: var(--muted); letter-spacing: 0.08em;
-    margin-bottom: 6px; display: block;
-  }
-  .imp-textarea {
-    width: 100%; min-height: 140px; max-height: 220px;
-    background: var(--bg); border: 1px solid var(--border-bright);
-    color: var(--text); font-family: 'Space Mono', monospace;
-    font-size: 13px; line-height: 1.6; padding: 12px 14px;
-    border-radius: 2px; resize: vertical; outline: none;
-    transition: border-color 0.2s;
-  }
-  .imp-textarea:focus { border-color: var(--accent); }
-  .imp-textarea::placeholder { color: var(--muted); opacity: 0.6; }
-
-  .imp-drop-zone {
-    border: 2px dashed var(--border-bright); border-radius: 4px;
-    padding: 32px 20px; text-align: center; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .imp-drop-zone:hover, .imp-drop-zone.drag-over {
-    border-color: var(--accent); background: rgba(200,169,110,0.04);
-  }
-  .imp-drop-icon { font-size: 28px; margin-bottom: 8px; display: block; color: var(--muted); }
-  .imp-drop-main { font-size: 14px; color: var(--text); margin-bottom: 4px; }
-  .imp-drop-sub { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
-  .imp-file-input { display: none; }
-  .imp-file-name {
-    margin-top: 10px; font-size: 13px; color: var(--accent); font-weight: 700;
-    display: none; text-align: center;
-  }
-  .imp-file-name.show { display: block; }
-
-  .imp-hint {
-    font-size: 12px; color: var(--muted); margin-top: 8px;
-    line-height: 1.6; letter-spacing: 0.03em;
-  }
-  .imp-hint code {
-    background: rgba(200,169,110,0.1); color: var(--accent);
-    padding: 1px 5px; border-radius: 2px; font-size: 12px;
-  }
-
-  /* Preview */
-  .imp-preview-wrap {
-    margin-top: 14px; display: none;
-  }
-  .imp-preview-wrap.show { display: block; }
-
-  .imp-preview-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 8px; flex-wrap: wrap; gap: 6px;
-  }
-  .imp-preview-title {
-    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
-  }
-  .imp-preview-count {
-    font-size: 12px; color: var(--muted);
-  }
-
-  .imp-preview-table {
-    width: 100%; border-collapse: collapse; font-size: 12px;
-    background: var(--bg); border: 1px solid var(--border); border-radius: 2px;
-  }
-  .imp-preview-table th {
-    padding: 7px 8px; text-align: left; font-size: 11px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); border-bottom: 1px solid var(--border-bright);
-    font-weight: 400; white-space: nowrap;
-  }
-  .imp-preview-table td {
-    padding: 7px 8px; border-bottom: 1px solid var(--border);
-    vertical-align: middle; white-space: nowrap;
-  }
-  .imp-preview-table tr:last-child td { border-bottom: none; }
-  .imp-preview-table tr.imp-row-error td { background: rgba(224,92,92,0.06); }
-  .imp-preview-table .imp-err-msg {
-    color: var(--red); font-size: 11px; font-style: italic;
-  }
-  .imp-status {
-    display: inline-block; padding: 2px 7px; border-radius: 2px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-  }
-
-  .imp-footer {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px; border-top: 1px solid var(--border);
-    background: var(--bg); flex-wrap: wrap; gap: 8px;
-  }
-  .imp-footer-info { font-size: 12px; color: var(--muted); }
-  .imp-footer-info .imp-ok { color: var(--green); font-weight: 700; }
-  .imp-footer-info .imp-err { color: var(--red); font-weight: 700; }
-
-  .btn-imp-load {
-    background: var(--accent); color: #0a0c0f; border: none;
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 9px 20px; border-radius: 2px; cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .btn-imp-load:hover { opacity: 0.85; }
-  .btn-imp-load:active { transform: scale(0.98); }
-  .btn-imp-load:disabled { opacity: 0.35; cursor: not-allowed; }
-
-  .btn-imp-import {
-    background: rgba(200,169,110,0.1); border: 1px solid var(--accent);
-    color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px;
-    letter-spacing: 0.08em; padding: 7px 14px; border-radius: 2px; cursor: pointer;
-    white-space: nowrap; transition: background 0.2s;
-  }
-  .btn-imp-import:hover { background: rgba(200,169,110,0.2); }
 </style>
 </head>
 <body>
@@ -654,97 +415,14 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('calc')">⬡ Tính COT Index</button>
-    <button class="tab-btn" onclick="switchTab('matrix')">⬢ COT Matrix</button>
+    <button class="tab-btn active" onclick="switchTab('matrix')">⬢ COT Matrix</button>
     <button class="tab-btn" onclick="switchTab('ref')">⊞ Bảng Tham Chiếu</button>
   </div>
 
-  <!-- ══ TAB 1: CALCULATOR ══════════════════════════════════ -->
-  <div class="tab-panel active" id="tab-calc">
-    <div class="grid">
-      <!-- Input -->
-      <div class="card">
-        <div class="card-label">Thông Số Đầu Vào</div>
-        <div class="input-group">
-          <div class="field">
-            <label>Cặp tiền / Đồng tiền</label>
-            <select id="pair">
-              <option value="EUR">EUR – Euro</option>
-              <option value="GBP">GBP – British Pound</option>
-              <option value="USD">USD – US Dollar Index</option>
-              <option value="JPY">JPY – Japanese Yen</option>
-              <option value="AUD">AUD – Australian Dollar</option>
-              <option value="CAD">CAD – Canadian Dollar</option>
-              <option value="NZD">NZD – New Zealand Dollar</option>
-              <option value="CHF">CHF – Swiss Franc</option>
-              <option value="OTHER">Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Net Position Hiện Tại</label>
-            <input type="text" id="current" placeholder="VD: 45.000" autocomplete="off" />
-            <div class="input-hint" id="hint-current">Dấu chấm = nghìn · Dấu phẩy = thập phân</div>
-          </div>
-          <div class="field">
-            <label>Net Tuần Trước <span style="color:var(--muted);font-size:9px">(tuỳ chọn)</span></label>
-            <input type="text" id="prev" placeholder="VD: 40.000" autocomplete="off" />
-            <div class="input-hint" id="hint-prev">Dùng để tính xu hướng tuần</div>
-          </div>
-          <div class="field">
-            <label>Net Thấp Nhất (52 tuần)</label>
-            <input type="text" id="low52" placeholder="VD: -80.000" autocomplete="off" />
-            <div class="input-hint" id="hint-low52">Cho phép số âm: −80.000</div>
-          </div>
-          <div class="field">
-            <label>Net Cao Nhất (52 tuần)</label>
-            <input type="text" id="high52" placeholder="VD: 120.000" autocomplete="off" />
-            <div class="input-hint" id="hint-high52">Phải lớn hơn Net Thấp Nhất</div>
-          </div>
-          <button class="btn-calc" onclick="calculate()">↗ Tính COT Index</button>
-        </div>
-      </div>
 
-      <!-- History -->
-      <div class="card">
-        <div class="card-label">Lịch Sử Tính Toán</div>
-        <div class="history-section" id="historyList">
-          <div class="no-history">Chưa có dữ liệu</div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-sm accent-btn" onclick="sendToMatrix()" title="Đưa lịch sử vào COT Matrix">↗ Gửi sang Matrix</button>
-          <button class="btn-sm" onclick="clearHistory()" style="margin-left:auto">${SVG_ICONS.x} Xóa tất cả</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Result -->
-    <div class="result-card" id="resultCard">
-      <div class="result-header">
-        <div>
-          <div class="result-pair" id="resPair">—</div>
-          <div class="result-index" id="resIndex">—</div>
-          <div class="bias-badge" id="resBadge">—</div>
-        </div>
-        <div style="text-align:right; max-width: 320px;">
-          <div class="signal-text" id="resSignal">—</div>
-          <div style="margin-top: 10px;" class="formula-line" id="resFormula"></div>
-        </div>
-      </div>
-      <div class="gauge-wrap">
-        <div class="gauge-track">
-          <div class="gauge-needle" id="needle" style="left:0%"></div>
-        </div>
-        <div class="gauge-labels">
-          <span>0 Bear</span><span>25</span><span>50 Neutral</span><span>75</span><span>100 Bull</span>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div class="formula-line" id="resCalc"></div>
-    </div>
-  </div>
 
   <!-- ══ TAB 2: COT MATRIX ══════════════════════════════════ -->
-  <div class="tab-panel" id="tab-matrix">
+  <div class="tab-panel active" id="tab-matrix">
 
     <!-- ═══ GITHUB CONFIG BANNER ═══ -->
     <div class="gh-config-card" id="ghConfigCard">
@@ -777,173 +455,6 @@
     </div>
     <div class="fetch-cache-info" id="fetchCacheInfo"></div>
 
-    <!-- Input panel -->
-    <div class="matrix-input-card">
-      <div class="matrix-input-title">Nhập Dữ Liệu Matrix</div>
-      <div class="matrix-input-sub">Nhập từng đồng tiền · tối thiểu 2, tối đa 8 · Dữ liệu từ CFTC.gov mỗi thứ Sáu</div>
-
-      <div class="matrix-row-inputs">
-        <div class="field">
-          <label>Đồng tiền</label>
-          <select id="m-pair">
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="USD">USD</option>
-            <option value="JPY">JPY</option>
-            <option value="AUD">AUD</option>
-            <option value="CAD">CAD</option>
-            <option value="NZD">NZD</option>
-            <option value="CHF">CHF</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Net hiện tại</label>
-          <input type="text" id="m-cur" placeholder="45.000" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Net tuần trước</label>
-          <input type="text" id="m-prev" placeholder="40.000" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Net thấp 52t</label>
-          <input type="text" id="m-lo" placeholder="-80.000" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Net cao 52t</label>
-          <input type="text" id="m-hi" placeholder="120.000" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Xu hướng 4t <span style="color:var(--muted);font-size:9px">(tuỳ chọn)</span></label>
-          <select id="m-trend4">
-            <option value="">—</option>
-            <option value="Tăng mạnh">Tăng mạnh</option>
-            <option value="Tăng">Tăng</option>
-            <option value="Tăng nhẹ">Tăng nhẹ</option>
-            <option value="Ổn định">Ổn định</option>
-            <option value="Giảm nhẹ">Giảm nhẹ</option>
-            <option value="Giảm">Giảm</option>
-            <option value="Giảm mạnh">Giảm mạnh</option>
-          </select>
-        </div>
-        <button class="btn-add-row" onclick="addMatrixEntry()">+ Thêm</button>
-      </div>
-
-      <!-- Progress -->
-      <div class="progress-label" id="progressLabel">0 / 8 đồng tiền</div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-
-      <!-- Entries list -->
-      <div class="matrix-entries" id="matrixEntries"></div>
-
-      <div style="display:flex;gap:8px;">
-        <button class="btn-imp-import" onclick="openImportModal()" title="Import dữ liệu từ CSV, JSON, Markdown hoặc File">⬆ Import</button>
-        <button class="btn-gen-matrix" id="btnGenMatrix" onclick="generateMatrix()" disabled style="flex:1">
-          ⬢ Tạo COT Matrix
-        </button>
-      </div>
-    </div>
-
-    <!-- ═══ IMPORT MODAL ═══ -->
-    <div class="imp-overlay" id="impOverlay" onclick="if(event.target===this)closeImportModal()">
-      <div class="imp-modal">
-        <div class="imp-header">
-          <span class="imp-title">⬆ Import Dữ Liệu</span>
-          <button class="imp-close" onclick="closeImportModal()" title="Đóng">×</button>
-        </div>
-
-        <div class="imp-method-tabs">
-          <button class="imp-method-btn active" onclick="switchImpMethod('csv')" id="impTab-csv">① CSV / Paste</button>
-          <button class="imp-method-btn" onclick="switchImpMethod('json')" id="impTab-json">② JSON</button>
-          <button class="imp-method-btn" onclick="switchImpMethod('md')" id="impTab-md">③ Markdown</button>
-          <button class="imp-method-btn" onclick="switchImpMethod('file')" id="impTab-file">④ Upload File</button>
-        </div>
-
-        <div class="imp-body">
-          <!-- Panel 1: CSV / Paste -->
-          <div class="imp-panel active" id="impPanel-csv">
-            <label class="imp-label">Paste dữ liệu từ Excel, Google Sheets hoặc CSV</label>
-            <textarea class="imp-textarea" id="impCsvText" placeholder="EUR	45000	40000	-80000	120000	Tăng mạnh
-GBP	30000	25000	-50000	90000	Giảm
-..."
-              oninput="parseImportCSV()"></textarea>
-            <div class="imp-hint">
-              Thứ tự cột: <code>Pair</code> <code>Net Current</code> <code>Net Prev</code> <code>Net Low</code> <code>Net High</code> <code>Trend4W</code><br>
-              Tự detect dấu phân cách: Tab ↹, dấu chấm phẩy (;), dấu phẩy (,)
-            </div>
-          </div>
-
-          <!-- Panel 2: JSON -->
-          <div class="imp-panel" id="impPanel-json">
-            <label class="imp-label">Paste JSON array</label>
-            <textarea class="imp-textarea" id="impJsonText" placeholder='[
-  {"pair":"EUR","cur":45000,"prev":40000,"lo":-80000,"hi":120000,"t4":"Tăng mạnh"},
-  {"pair":"GBP","current":30000,"prev":25000,"low52":-50000,"high52":90000}
-]'
-              oninput="parseImportJSON()"></textarea>
-            <div class="imp-hint">
-              Hỗ trợ nhiều tên field:<br>
-              Net hiện tại: <code>cur</code> <code>current</code> <code>net</code> <code>netCurrent</code><br>
-              Net thấp: <code>lo</code> <code>low</code> <code>low52</code> <code>netLow</code><br>
-              Net cao: <code>hi</code> <code>high</code> <code>high52</code> <code>netHigh</code><br>
-              Net trước: <code>prev</code> <code>previous</code> <code>netPrev</code><br>
-              Xu hướng: <code>t4</code> <code>trend</code> <code>trend4w</code>
-            </div>
-          </div>
-
-          <!-- Panel 3: Markdown -->
-          <div class="imp-panel" id="impPanel-md">
-            <label class="imp-label">Paste nội dung Markdown đã xuất từ lần trước</label>
-            <textarea class="imp-textarea" id="impMdText" placeholder="# COT MATRIX — Tuần 25/02/2026
-...
-| **EUR** | 45.000 | -80.000 | 120.000 | 40.000 | ... |
-| **GBP** | 30.000 | -50.000 | 90.000  | 25.000 | ... |
-..."
-              oninput="parseImportMD()"></textarea>
-            <div class="imp-hint">
-              Dán toàn bộ file <code>.md</code> đã export. Tool sẽ tự parse bảng COT Matrix.
-            </div>
-          </div>
-
-          <!-- Panel 4: Upload File -->
-          <div class="imp-panel" id="impPanel-file">
-            <div class="imp-drop-zone" id="impDropZone"
-              onclick="document.getElementById('impFileInput').click()"
-              ondragover="event.preventDefault();this.classList.add('drag-over')"
-              ondragleave="this.classList.remove('drag-over')"
-              ondrop="event.preventDefault();this.classList.remove('drag-over');handleImportFile(event.dataTransfer.files[0])">
-              <span class="imp-drop-icon">${SVG_ICONS.folder}</span>
-              <div class="imp-drop-main">Kéo thả file hoặc bấm để chọn</div>
-              <div class="imp-drop-sub">.csv · .json · .md · .txt</div>
-            </div>
-            <input type="file" class="imp-file-input" id="impFileInput" accept=".csv,.json,.md,.txt,.tsv" onchange="handleImportFile(this.files[0])">
-            <div class="imp-file-name" id="impFileName"></div>
-          </div>
-
-          <!-- Shared Preview -->
-          <div class="imp-preview-wrap" id="impPreview">
-            <div class="imp-preview-head">
-              <span class="imp-preview-title">Preview</span>
-              <span class="imp-preview-count" id="impPreviewCount"></span>
-            </div>
-            <div style="overflow-x:auto">
-              <table class="imp-preview-table">
-                <thead><tr>
-                  <th>Pair</th><th>Net Current</th><th>Net Prev</th>
-                  <th>Net Low</th><th>Net High</th><th>Trend 4W</th>
-                  <th>COT Index</th><th>Zone</th><th>Status</th>
-                </tr></thead>
-                <tbody id="impPreviewBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="imp-footer">
-          <div class="imp-footer-info" id="impFooterInfo">Chưa có dữ liệu để preview</div>
-          <button class="btn-imp-load" id="btnImpLoad" onclick="loadImportToMatrix()" disabled>${SVG_ICONS.check} Nạp vào Matrix</button>
-        </div>
-      </div>
-    </div>
 
     <!-- Matrix output -->
     <div class="matrix-container" id="matrixOutput">
@@ -1010,7 +521,7 @@ GBP	30000	25000	-50000	90000	Giảm
 
       <!-- Signals / Divergence Checklist -->
       <div class="signals-card" id="signalsCard" style="display:none">
-        <div class="signals-title">${SVG_ICONS.zap} Tín Hiệu Đặc Biệt</div>
+        <div class="signals-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Tín Hiệu Đặc Biệt</div>
         <div id="signalsAutoList"></div>
         <div class="signals-manual">
           <label><input type="checkbox" id="sigDivergence"> Phát hiện Divergence COT vs Price</label>
@@ -1021,13 +532,13 @@ GBP	30000	25000	-50000	90000	Giảm
 
       <!-- Action Plan -->
       <div class="actionplan-card" id="actionplanCard" style="display:none">
-        <div class="actionplan-title">${SVG_ICONS.clipboard} Kế Hoạch Tuần Này</div>
+        <div class="actionplan-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Kế Hoạch Tuần Này</div>
         <div class="ap-pairs-grid" id="apPairsGrid"></div>
         <div class="ap-notes-wrap">
           <div class="ap-row-label">GHI CHÚ TỔNG</div>
           <textarea id="apNotes" placeholder="Ghi chú chiến lược tuần này..." oninput="saveActionPlan()"></textarea>
         </div>
-        <div class="ap-saved-hint" id="apSavedHint">${SVG_ICONS.check} Đã lưu tự động</div>
+        <div class="ap-saved-hint" id="apSavedHint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 6 9 17l-5-5"/></svg> Đã lưu tự động</div>
       </div>
 
       <!-- Export Panel -->
@@ -1089,7 +600,7 @@ GBP	30000	25000	-50000	90000	Giảm
           <tr>
             <td><span class="zone-dot" style="background:var(--red)"></span>0 – 10</td>
             <td>Cực kỳ bearish</td><td><span style="color:var(--red)">EXTREME BEAR</span></td>
-            <td class="action-note">${SVG_ICONS.alertTriangle} Cẩn thận reversal tăng</td>
+            <td class="action-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Cẩn thận reversal tăng</td>
           </tr>
           <tr>
             <td><span class="zone-dot" style="background:#e07a5c"></span>10 – 25</td>
@@ -1119,7 +630,7 @@ GBP	30000	25000	-50000	90000	Giảm
           <tr>
             <td><span class="zone-dot" style="background:#3dffc8"></span>90 – 100</td>
             <td>Cực kỳ bullish</td><td><span style="color:#3dffc8">EXTREME BULL</span></td>
-            <td class="action-note">${SVG_ICONS.alertTriangle} Cẩn thận reversal giảm</td>
+            <td class="action-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Cẩn thận reversal giảm</td>
           </tr>
         </tbody>
       </table>
@@ -1141,26 +652,6 @@ GBP	30000	25000	-50000	90000	Giảm
 <script src="../shared/sync.js"></script>
 <script src="../shared/nav.js"></script>
 <script>
-// Live hint for an input
-function setupHint(inputId, hintId, defaultHint) {
-  const el = document.getElementById(inputId);
-  const hint = document.getElementById(hintId);
-  if (!el || !hint) return;
-  el.addEventListener('input', () => {
-    const v = parseVN(el.value);
-    if (!el.value.trim()) {
-      el.classList.remove('input-error'); hint.textContent = defaultHint; hint.className = 'input-hint';
-    } else if (isNaN(v)) {
-      el.classList.add('input-error'); hint.innerHTML = `<span style="display:flex;align-items:center;gap:4px">${SVG_ICONS.x} Định dạng không hợp lệ</span>`; hint.className = 'input-hint error';
-    } else {
-      el.classList.remove('input-error'); hint.innerHTML = `<span style="display:flex;align-items:center;gap:4px">${SVG_ICONS.check} Đọc được: ' + fmtVN(v); hint.className = 'input-hint ok';
-    }
-  });
-}
-setupHint('current', 'hint-current', 'Dấu chấm = nghìn · Dấu phẩy = thập phân');
-setupHint('prev',    'hint-prev',    'Dùng để tính xu hướng tuần');
-setupHint('low52',   'hint-low52',   'Cho phép số âm: −80.000');
-setupHint('high52',  'hint-high52',  'Phải lớn hơn Net Thấp Nhất');
 
 // ═══════════════════════════════════════════════════
 //  TAB
@@ -1173,191 +664,9 @@ function switchTab(id) {
 }
 
 // ═══════════════════════════════════════════════════
-//  HISTORY — with per-row delete
-// ═══════════════════════════════════════════════════
-let history = [];
-try { history = JSON.parse(localStorage.getItem('cot_history') || '[]'); } catch(e) { history = []; }
-
-function saveHistory() { localStorage.setItem('cot_history', JSON.stringify(history)); }
-
-function deleteHistoryRow(idx) {
-  history.splice(idx, 1);
-  saveHistory();
-  renderHistory();
-}
-
-function renderHistory() {
-  const el = document.getElementById('historyList');
-  if (!history.length) {
-    el.innerHTML = '<div class="no-history">Chưa có dữ liệu</div>';
-    return;
-  }
-  el.innerHTML = history.map((h, i) => `
-    <div class="history-item">
-      <span class="h-date">${h.date}</span>
-      <span class="h-pair">${h.pair}</span>
-      <span class="h-index" style="color:${h.color}">${h.idx}</span>
-      <span class="h-badge-wrap">
-        <span style="color:${h.color};background:${h.color}18;border:1px solid ${h.color}33;padding:2px 7px;font-size:9px;letter-spacing:0.08em;border-radius:2px;font-weight:700">${h.label}</span>
-      </span>
-      <button class="h-del" onclick="deleteHistoryRow(${i})" title="Xoá dòng này">×</button>
-    </div>
-  `).join('');
-}
-
-function clearHistory() {
-  if (history.length && !confirm('Xoá toàn bộ lịch sử?')) return;
-  history = [];
-  saveHistory();
-  renderHistory();
-}
-
-// ═══════════════════════════════════════════════════
-//  CALCULATE (Tab 1)
-// ═══════════════════════════════════════════════════
-function calculate() {
-  const pairVal  = document.getElementById('pair').value;
-  const pairText = document.getElementById('pair').selectedOptions[0].text.split('–')[0].trim();
-  const cur  = parseVN(document.getElementById('current').value);
-  const prev = parseVN(document.getElementById('prev').value);
-  const lo   = parseVN(document.getElementById('low52').value);
-  const hi   = parseVN(document.getElementById('high52').value);
-
-  if (isNaN(cur) || isNaN(lo) || isNaN(hi)) {
-    alert('Vui lòng nhập đầy đủ: Net hiện tại, Net thấp nhất, Net cao nhất.\nVí dụ: 45.000 hoặc -80.500');
-    return;
-  }
-  if (hi <= lo) { alert('Net Cao Nhất phải lớn hơn Net Thấp Nhất.'); return; }
-
-  const range = hi - lo;
-  const raw = ((cur - lo) / range) * 100;
-  const idx = Math.min(100, Math.max(0, raw));
-  const z = getZone(idx);
-
-  const card = document.getElementById('resultCard');
-  card.className = 'result-card show';
-  card.style.borderColor = z.color;
-  card.style.background = z.bg;
-
-  document.getElementById('resPair').textContent = pairText;
-  const idxEl = document.getElementById('resIndex');
-  idxEl.textContent = fmtIdx(idx);
-  idxEl.style.color = z.color;
-
-  const badge = document.getElementById('resBadge');
-  badge.textContent = z.label;
-  badge.style.background = z.bg;
-  badge.style.color = z.color;
-  badge.style.border = `1px solid ${z.color}44`;
-
-  document.getElementById('resSignal').textContent = z.signal;
-  document.getElementById('resFormula').innerHTML = `<span>↳ ICT Action:</span> ${z.ictAction}`;
-
-  let prevNote = '';
-  if (!isNaN(prev)) {
-    const delta = cur - prev;
-    const sign = delta >= 0 ? '+' : '';
-    prevNote = ` · Δ tuần: <span style="color:${delta>=0?'var(--green)':'var(--red)'}">${sign}${fmtVN(Math.round(delta))}</span>`;
-  }
-
-  document.getElementById('resCalc').innerHTML =
-    `Formula: (${fmtVN(cur)} − ${fmtVN(lo)}) ÷ (${fmtVN(hi)} − ${fmtVN(lo)}) × 100 = <span style="color:${z.color};font-weight:700">${idx.toFixed(2).replace('.',',')}</span>${prevNote}`;
-
-  setTimeout(() => { document.getElementById('needle').style.left = idx + '%'; }, 50);
-
-  const entry = {
-    pair: pairText, pairVal,
-    idx: fmtIdx(idx), idxNum: idx,
-    label: z.label, color: z.color,
-    cur, prev: isNaN(prev) ? null : prev, lo, hi,
-    date: new Date().toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit'})
-  };
-  history.unshift(entry);
-  if (history.length > 16) history = history.slice(0, 16);
-  saveHistory();
-  renderHistory();
-}
-
-// ═══════════════════════════════════════════════════
-//  MATRIX — entries management
+//  MATRIX — data (populated by auto-fetch)
 // ═══════════════════════════════════════════════════
 let matrixEntries = [];
-
-function updateMatrixProgress() {
-  const n = matrixEntries.length;
-  document.getElementById('progressLabel').textContent = `${n} / 8 đồng tiền`;
-  document.getElementById('progressFill').style.width = (n / 8 * 100) + '%';
-  document.getElementById('btnGenMatrix').disabled = n < 2;
-}
-
-function renderMatrixEntries() {
-  const el = document.getElementById('matrixEntries');
-  if (!matrixEntries.length) { el.innerHTML = ''; updateMatrixProgress(); return; }
-  el.innerHTML = matrixEntries.map((e, i) => {
-    const z = getZone(e.idxNum);
-    return `<div class="matrix-entry-row">
-      <span class="entry-pair" style="color:${z.color}">${e.pair}</span>
-      <span class="entry-vals">Net: ${fmtVN(e.cur)} · Lo: ${fmtVN(e.lo)} · Hi: ${fmtVN(e.hi)}${e.prev!==null?' · Prev: '+fmtVN(e.prev):''}</span>
-      <span class="entry-idx" style="color:${z.color}">${fmtIdx(e.idxNum)}</span>
-      <button class="entry-del" onclick="deleteMatrixEntry(${i})" title="Xoá">×</button>
-    </div>`;
-  }).join('');
-  updateMatrixProgress();
-}
-
-function deleteMatrixEntry(i) {
-  matrixEntries.splice(i, 1);
-  renderMatrixEntries();
-}
-
-function addMatrixEntry() {
-  if (matrixEntries.length >= 8) { alert('Tối đa 8 đồng tiền.'); return; }
-  const pair  = document.getElementById('m-pair').value;
-  const cur   = parseVN(document.getElementById('m-cur').value);
-  const prev  = parseVN(document.getElementById('m-prev').value);
-  const lo    = parseVN(document.getElementById('m-lo').value);
-  const hi    = parseVN(document.getElementById('m-hi').value);
-  const t4    = document.getElementById('m-trend4').value;
-
-  if (isNaN(cur) || isNaN(lo) || isNaN(hi)) { alert('Vui lòng nhập đủ Net hiện tại, Net thấp, Net cao.'); return; }
-  if (hi <= lo) { alert('Net Cao Nhất phải lớn hơn Net Thấp Nhất.'); return; }
-  if (matrixEntries.find(e => e.pair === pair)) { alert(`${pair} đã được thêm rồi.`); return; }
-
-  const range = hi - lo;
-  const raw = ((cur - lo) / range) * 100;
-  const idxNum = Math.min(100, Math.max(0, raw));
-
-  matrixEntries.push({ pair, cur, prev: isNaN(prev) ? null : prev, lo, hi, t4, idxNum });
-  renderMatrixEntries();
-
-  // Clear inputs
-  ['m-cur','m-prev','m-lo','m-hi'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('m-trend4').value = '';
-}
-
-// Send history to matrix
-function sendToMatrix() {
-  if (!history.length) { alert('Lịch sử trống.'); return; }
-  // Use the most recent entry per pairVal
-  const seen = new Set();
-  history.forEach(h => {
-    if (!seen.has(h.pairVal) && h.lo !== undefined && h.hi !== undefined) {
-      seen.add(h.pairVal);
-      if (matrixEntries.length < 8 && !matrixEntries.find(e => e.pair === h.pair)) {
-        const range = h.hi - h.lo;
-        const raw = ((h.cur - h.lo) / range) * 100;
-        const idxNum = Math.min(100, Math.max(0, raw));
-        matrixEntries.push({ pair: h.pair, cur: h.cur, prev: h.prev, lo: h.lo, hi: h.hi, t4: '', idxNum });
-      }
-    }
-  });
-  renderMatrixEntries();
-  // Switch to matrix tab
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-matrix').classList.add('active');
-  document.querySelectorAll('.tab-btn')[1].classList.add('active');
-}
 
 // ═══════════════════════════════════════════════════
 //  GENERATE MATRIX
@@ -1537,17 +846,11 @@ function generateMatrix() {
   document.getElementById('matrixTitleText').textContent = 'COT MATRIX';
   document.getElementById('matrixWeekText').textContent = weekLabel;
 
-  // Data source badge
+  // Data source badge — always auto
   const badge = document.getElementById('dataSourceBadge');
-  if (_matrixDataSource === 'auto') {
-    badge.className = 'data-source-badge auto';
-    badge.textContent = '⬡ CFTC Auto · ' + weekLabel;
-    badge.style.display = 'inline-block';
-  } else {
-    badge.className = 'data-source-badge manual';
-    badge.textContent = 'Manual';
-    badge.style.display = 'inline-block';
-  }
+  badge.className = 'data-source-badge auto';
+  badge.textContent = '⬡ CFTC Auto · ' + weekLabel;
+  badge.style.display = 'inline-block';
 
   // Store for export
   _matrixData = { entries: matrixEntries, sorted, longPairs, shortPairs, avoidPairs, weekLabel };
@@ -1842,7 +1145,7 @@ function loadActionPlan(weekLabel) {
 //  EXPORT
 // ═══════════════════════════════════════════════════
 let _matrixData = null;
-let _matrixDataSource = 'manual'; // 'manual' | 'auto'
+
 let _currentFmt = 'md';
 
 function switchExportFmt(fmt) {
@@ -2171,309 +1474,6 @@ function downloadExport() {
   showToast('⬇ Đang tải về...');
 }
 
-// ═══════════════════════════════════════════════════
-//  IMPORT
-// ═══════════════════════════════════════════════════
-let _importParsed = []; // array of { pair, cur, prev, lo, hi, t4, idxNum, error }
-
-function openImportModal() {
-  document.getElementById('impOverlay').classList.add('show');
-  clearImportState();
-}
-
-function closeImportModal() {
-  document.getElementById('impOverlay').classList.remove('show');
-}
-
-function switchImpMethod(method) {
-  ['csv','json','md','file'].forEach(m => {
-    document.getElementById('impTab-' + m).classList.toggle('active', m === method);
-    document.getElementById('impPanel-' + m).classList.toggle('active', m === method);
-  });
-  clearImportState();
-}
-
-function clearImportState() {
-  _importParsed = [];
-  document.getElementById('impPreview').classList.remove('show');
-  document.getElementById('impPreviewBody').innerHTML = '';
-  document.getElementById('impPreviewCount').textContent = '';
-  document.getElementById('impFooterInfo').textContent = 'Chưa có dữ liệu để preview';
-  document.getElementById('btnImpLoad').disabled = true;
-}
-
-// ── Shared: render preview table ──
-function renderImportPreview(rows) {
-  _importParsed = rows;
-  const tbody = document.getElementById('impPreviewBody');
-  const wrap = document.getElementById('impPreview');
-
-  if (!rows.length) {
-    wrap.classList.remove('show');
-    tbody.innerHTML = '';
-    document.getElementById('impPreviewCount').textContent = '';
-    document.getElementById('impFooterInfo').textContent = 'Chưa có dữ liệu để preview';
-    document.getElementById('btnImpLoad').disabled = true;
-    return;
-  }
-
-  wrap.classList.add('show');
-
-  const okCount = rows.filter(r => !r.error).length;
-  const errCount = rows.filter(r => r.error).length;
-
-  document.getElementById('impPreviewCount').textContent = `${rows.length} dòng`;
-
-  tbody.innerHTML = rows.map(r => {
-    if (r.error) {
-      return `<tr class="imp-row-error">
-        <td style="font-weight:700">${r.pair || '—'}</td>
-        <td>${r.cur !== undefined && !isNaN(r.cur) ? fmtVN(r.cur) : '—'}</td>
-        <td>${r.prev !== null && r.prev !== undefined && !isNaN(r.prev) ? fmtVN(r.prev) : '—'}</td>
-        <td>${r.lo !== undefined && !isNaN(r.lo) ? fmtVN(r.lo) : '—'}</td>
-        <td>${r.hi !== undefined && !isNaN(r.hi) ? fmtVN(r.hi) : '—'}</td>
-        <td style="color:var(--muted)">${r.t4 || '—'}</td>
-        <td>—</td><td>—</td>
-        <td><span class="imp-err-msg" style="display:flex;align-items:center;gap:4px">${SVG_ICONS.alertTriangle} ${r.error}</span></td>
-      </tr>`;
-    }
-    const z = getZone(r.idxNum);
-    return `<tr>
-      <td style="font-weight:700;color:${z.color}">${r.pair}</td>
-      <td>${fmtVN(r.cur)}</td>
-      <td>${r.prev !== null ? fmtVN(r.prev) : '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${fmtVN(r.lo)}</td>
-      <td>${fmtVN(r.hi)}</td>
-      <td style="color:var(--muted)">${r.t4 || '—'}</td>
-      <td><span style="color:${z.color};font-weight:700">${fmtIdx(r.idxNum)}</span></td>
-      <td><span class="imp-status" style="color:${z.color};background:${z.bg}">${z.label}</span></td>
-      <td style="color:var(--green)">${SVG_ICONS.check}</td>
-    </tr>`;
-  }).join('');
-
-  let info = '';
-  if (okCount) info += `<span class="imp-ok">${okCount} hợp lệ</span>`;
-  if (okCount && errCount) info += ' · ';
-  if (errCount) info += `<span class="imp-err">${errCount} lỗi</span>`;
-  document.getElementById('impFooterInfo').innerHTML = info;
-  document.getElementById('btnImpLoad').disabled = okCount === 0;
-}
-
-// ── Shared: compute row with validation ──
-function computeImportRow(pair, curRaw, prevRaw, loRaw, hiRaw, t4) {
-  const p = (pair || '').trim().toUpperCase().replace(/[^A-Z]/g, '');
-  const cur = typeof curRaw === 'number' ? curRaw : parseVN(curRaw);
-  const prev = (prevRaw === null || prevRaw === undefined || prevRaw === '')
-    ? null : (typeof prevRaw === 'number' ? prevRaw : parseVN(prevRaw));
-  const lo = typeof loRaw === 'number' ? loRaw : parseVN(loRaw);
-  const hi = typeof hiRaw === 'number' ? hiRaw : parseVN(hiRaw);
-
-  const base = { pair: p || pair, cur, prev: (prev !== null && !isNaN(prev)) ? prev : null, lo, hi, t4: t4 || '' };
-
-  if (!p) return { ...base, error: 'Thiếu Pair' };
-  if (isNaN(cur)) return { ...base, error: 'Net Current không hợp lệ' };
-  if (isNaN(lo)) return { ...base, error: 'Net Low không hợp lệ' };
-  if (isNaN(hi)) return { ...base, error: 'Net High không hợp lệ' };
-  if (hi <= lo) return { ...base, error: 'High phải lớn hơn Low' };
-
-  const range = hi - lo;
-  const raw = ((cur - lo) / range) * 100;
-  const idxNum = Math.min(100, Math.max(0, raw));
-  return { ...base, idxNum, error: null };
-}
-
-// ── ① CSV / Paste parser ──
-function parseImportCSV() {
-  const text = document.getElementById('impCsvText').value.trim();
-  if (!text) { clearImportState(); return; }
-
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  // Auto-detect separator
-  const firstLine = lines[0];
-  let sep = '\t';
-  if (firstLine.includes('\t')) sep = '\t';
-  else if (firstLine.includes(';')) sep = ';';
-  else if (firstLine.includes(',')) sep = ',';
-
-  // Skip header if detected
-  const headerPatterns = /^(pair|đồng|currency|symbol)/i;
-  let dataLines = lines;
-  if (headerPatterns.test(lines[0].split(sep)[0].trim())) {
-    dataLines = lines.slice(1);
-  }
-
-  const rows = dataLines.map(line => {
-    const cols = line.split(sep).map(c => c.trim());
-    if (cols.length < 4) return computeImportRow(cols[0], cols[1], null, cols[2], cols[3], cols[4]);
-    // Pair | Net Current | Net Prev | Net Low | Net High | Trend4W
-    return computeImportRow(cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]);
-  });
-
-  renderImportPreview(rows);
-}
-
-// ── ② JSON parser ──
-function parseImportJSON() {
-  const text = document.getElementById('impJsonText').value.trim();
-  if (!text) { clearImportState(); return; }
-
-  let arr;
-  try {
-    const parsed = JSON.parse(text);
-    // Support { entries: [...] } or [...]
-    if (Array.isArray(parsed)) arr = parsed;
-    else if (parsed && Array.isArray(parsed.entries)) arr = parsed.entries;
-    else { renderImportPreview([{ pair: '—', error: 'JSON phải là array hoặc có field "entries"' }]); return; }
-  } catch (e) {
-    renderImportPreview([{ pair: '—', error: 'JSON không hợp lệ: ' + e.message.slice(0, 60) }]);
-    return;
-  }
-
-  const rows = arr.map(obj => {
-    const pick = (...keys) => {
-      for (const k of keys) {
-        if (obj[k] !== undefined && obj[k] !== null) return obj[k];
-        // Also check case-insensitive
-        const lower = k.toLowerCase();
-        for (const ok of Object.keys(obj)) {
-          if (ok.toLowerCase() === lower) return obj[ok];
-        }
-      }
-      return undefined;
-    };
-
-    const pair = pick('pair', 'currency', 'symbol', 'name') || '';
-    const cur = pick('cur', 'current', 'net', 'netCurrent', 'net_current', 'Net Current');
-    const prev = pick('prev', 'previous', 'netPrev', 'net_prev', 'Net Prev', 'Net Previous');
-    const lo = pick('lo', 'low', 'low52', 'netLow', 'net_low', 'Net Low', 'Net Low 52W');
-    const hi = pick('hi', 'high', 'high52', 'netHigh', 'net_high', 'Net High', 'Net High 52W');
-    const t4 = pick('t4', 'trend', 'trend4w', 'trend_4w', 'Trend 4W') || '';
-
-    return computeImportRow(pair, cur, prev, lo, hi, String(t4));
-  });
-
-  renderImportPreview(rows);
-}
-
-// ── ③ Markdown parser ──
-function parseImportMD() {
-  const text = document.getElementById('impMdText').value.trim();
-  if (!text) { clearImportState(); return; }
-
-  // Find the COT Matrix table (look for table rows with | Pair | data)
-  const lines = text.split(/\r?\n/);
-  const tableRows = [];
-  let inTable = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('|')) { if (inTable) break; continue; }
-
-    // Skip separator rows like |---|---|
-    if (/^\|[\s\-:|]+\|$/.test(trimmed)) { inTable = true; continue; }
-
-    // Skip header rows
-    if (/đồng tiền|pair|currency/i.test(trimmed) && /net|index/i.test(trimmed)) {
-      inTable = true;
-      continue;
-    }
-
-    if (!inTable) {
-      // Could be the first data row without header detection
-      const cells = trimmed.split('|').map(c => c.trim()).filter(c => c);
-      if (cells.length >= 5) {
-        // Check if first cell looks like a pair (3 letters, maybe bold)
-        const pairTest = cells[0].replace(/\*\*/g, '').trim();
-        if (/^[A-Z]{2,5}$/i.test(pairTest)) {
-          inTable = true;
-        }
-      }
-    }
-
-    if (inTable) {
-      const cells = trimmed.split('|').map(c => c.trim()).filter(c => c);
-      if (cells.length >= 5) tableRows.push(cells);
-    }
-  }
-
-  if (!tableRows.length) {
-    renderImportPreview([{ pair: '—', error: 'Không tìm thấy bảng COT Matrix trong Markdown' }]);
-    return;
-  }
-
-  // Parse table rows
-  // Expected columns: Đồng tiền | Net hiện tại | Net thấp 52T | Net cao 52T | Net tuần trước | Δ Tuần | Xu hướng 4T | COT Index | Đánh giá
-  const rows = tableRows.map(cells => {
-    const pair = cells[0].replace(/\*\*/g, '').trim();
-    const cur = cells[1];
-    // Columns 2,3 = lo, hi (matching export format)
-    const lo = cells[2];
-    const hi = cells[3];
-    const prev = cells.length > 4 ? cells[4] : null;
-    // Trend is usually column 6
-    const t4 = cells.length > 6 ? cells[6] : '';
-
-    return computeImportRow(pair, cur, prev === '—' ? null : prev, lo, hi, t4 === '—' ? '' : t4);
-  });
-
-  renderImportPreview(rows);
-}
-
-// ── ④ File upload handler ──
-function handleImportFile(file) {
-  if (!file) return;
-
-  const name = file.name.toLowerCase();
-  const nameEl = document.getElementById('impFileName');
-  nameEl.innerHTML = `<span style="display:flex;align-items:center;gap:4px">${SVG_ICONS.paperclip} ${file.name}</span>`;
-  nameEl.classList.add('show');
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const content = e.target.result;
-
-    // Auto-detect format from extension
-    if (name.endsWith('.json')) {
-      document.getElementById('impJsonText').value = content;
-      switchImpMethod('json');
-      parseImportJSON();
-    } else if (name.endsWith('.md')) {
-      document.getElementById('impMdText').value = content;
-      switchImpMethod('md');
-      parseImportMD();
-    } else {
-      // .csv, .tsv, .txt → treat as CSV
-      document.getElementById('impCsvText').value = content;
-      switchImpMethod('csv');
-      parseImportCSV();
-    }
-  };
-  reader.readAsText(file);
-}
-
-// ── Load parsed data into matrix ──
-function loadImportToMatrix() {
-  const valid = _importParsed.filter(r => !r.error);
-  if (!valid.length) return;
-
-  // Replace matrix entries with imported data
-  matrixEntries = valid.map(r => ({
-    pair: r.pair,
-    cur: r.cur,
-    prev: r.prev,
-    lo: r.lo,
-    hi: r.hi,
-    t4: r.t4,
-    idxNum: r.idxNum
-  }));
-
-  // Limit to 8
-  if (matrixEntries.length > 8) matrixEntries = matrixEntries.slice(0, 8);
-
-  renderMatrixEntries();
-  closeImportModal();
-  showToast(`${SVG_ICONS.check} Đã nạp ${matrixEntries.length} đồng tiền vào Matrix`);
-}
 
 // ═══════════════════════════════════════════════════
 //  GITHUB CONFIG + AUTO-FETCH
@@ -2491,7 +1491,7 @@ function saveGhConfig() {
   }
   localStorage.setItem('gh_username', user);
   localStorage.setItem('gh_repo', repo);
-  showToast(`${SVG_ICONS.check} Đã lưu cấu hình GitHub');
+  showToast(`${SVG_ICONS.check} Đã lưu cấu hình GitHub`);
   renderGhConfigCollapsed(user, repo);
   enableFetchButton();
 }
@@ -2710,10 +1710,8 @@ async function fetchCftcFromGitHub() {
       };
     });
 
-    renderMatrixEntries();
 
     // Set data source info
-    _matrixDataSource = 'auto';
     const weekLabel = payload.meta ? payload.meta.weekLabel : '';
     _matrixWeekOverride = weekLabel ? `Tuần ${weekLabel}` : null;
 
@@ -2771,8 +1769,7 @@ function loadFromCache() {
     };
   });
 
-  renderMatrixEntries();
-  _matrixDataSource = 'auto';
+
   const weekLabel = payload.meta ? payload.meta.weekLabel : '';
   _matrixWeekOverride = weekLabel ? `Tuần ${weekLabel}` : null;
   generateMatrix();
@@ -2845,7 +1842,7 @@ function lockWeeklyBias() {
   status.innerHTML = SVG_ICONS.check + ' Đã lock bias!';
   status.style.opacity = '1';
   setTimeout(() => status.style.opacity = '0', 2500);
-  showToast(`${SVG_ICONS.check} Weekly Bias đã lock — có thể dùng trong Daily Bias Board');
+  showToast(`${SVG_ICONS.check} Weekly Bias đã lock — có thể dùng trong Daily Bias Board`);
   renderLockBiasGrid(sorted);
 }
 
@@ -2941,23 +1938,9 @@ generateMatrix = function() {
 // ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
-renderHistory();
-updateMatrixProgress();
 initGhConfig();
 renderCacheInfo();
 renderAlertHistory();
-
-// When user manually adds entry, mark source as manual
-const _origAddMatrixEntry = addMatrixEntry;
-addMatrixEntry = function() {
-  _matrixDataSource = 'manual';
-  _matrixWeekOverride = null;
-  _origAddMatrixEntry();
-};
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.activeElement.closest('#tab-calc')) calculate();
-});
 </script>
 </body>
 </html>
