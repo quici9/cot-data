@@ -425,12 +425,12 @@
   <div class="tab-panel active" id="tab-matrix">
 
     <!-- ═══ GITHUB CONFIG BANNER ═══ -->
-    <div class="gh-config-card" id="ghConfigCard">
+    <div class="gh-config-card collapsed" id="ghConfigCard">
       <div class="gh-config-header">
         <span class="gh-config-title"><span class="gh-icon">⬡</span>GitHub Auto-Fetch CFTC</span>
         <span id="ghHeaderRight"></span>
       </div>
-      <div class="gh-config-body" id="ghConfigBody">
+      <div class="gh-config-body hidden" id="ghConfigBody">
         <div class="gh-config-row">
           <div class="field">
             <label>GitHub Username</label>
@@ -1546,15 +1546,21 @@ function enableFetchButton() {
   }
 }
 
+const GH_DEFAULT_USER = 'quici9';
+const GH_DEFAULT_REPO = 'cot-data';
+
 function initGhConfig() {
-  const user = localStorage.getItem('gh_username');
-  const repo = localStorage.getItem('gh_repo');
-  if (user && repo) {
-    renderGhConfigCollapsed(user, repo);
-    enableFetchButton();
-    document.getElementById('ghUsername').value = user;
-    document.getElementById('ghRepo').value = repo;
+  let user = localStorage.getItem('gh_username');
+  let repo = localStorage.getItem('gh_repo');
+  // Auto-set defaults if not configured yet
+  if (!user || !repo) {
+    user = user || GH_DEFAULT_USER;
+    repo = repo || GH_DEFAULT_REPO;
+    localStorage.setItem('gh_username', user);
+    localStorage.setItem('gh_repo', repo);
   }
+  renderGhConfigCollapsed(user, repo);
+  enableFetchButton();
 }
 
 // ── Cache ──
