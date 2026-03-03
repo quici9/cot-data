@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Lot Size Calculator</title>
+<meta name="description" content="NEXUS Lot Size Calculator — Tính toán lot size theo vốn, risk %, SL, và spread. Hỗ trợ Prop Firm Mode.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+  /* ── Lot Calc aliases ── */
+  :root {
+    --bg: var(--bg-primary);
+    --surface: var(--bg-surface);
+    --text: var(--text-primary);
+    --muted: var(--text-secondary);
+    --red: var(--bear);
+    --green: var(--bull);
+    --yellow: var(--warn);
+  }
+
+  /* ── Layout ── */
+  .lc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 768px) {
+    .lc-grid { grid-template-columns: 1fr; }
+  }
+
+  .lc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .lc-card-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 18px;
+  }
+
+  /* ── Fields ── */
+  .lc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .lc-field:last-child { margin-bottom: 0; }
+  .lc-field label {
+    font-size: 13px; color: var(--muted);
+    letter-spacing: 0.06em; font-weight: 500;
+  }
+  .lc-field input, .lc-field select {
+    background: var(--bg); border: 1px solid var(--border-bright);
+    color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 15px; padding: 10px 12px; border-radius: 2px;
+    outline: none; transition: border-color 0.2s; width: 100%;
+    box-sizing: border-box;
+  }
+  .lc-field input:focus, .lc-field select:focus { border-color: var(--accent); }
+  .lc-field input.error { border-color: var(--red); background: rgba(224,92,92,0.05); }
+  .lc-hint {
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.03em; margin-top: 2px;
+  }
+
+  /* Preset buttons */
+  .lc-presets {
+    display: flex; gap: 6px; margin-top: 4px;
+  }
+  .lc-preset-btn {
+    background: none; border: 1px solid var(--border-bright);
+    color: var(--muted); font-family: 'Space Mono', monospace;
+    font-size: 11px; padding: 4px 10px; border-radius: 2px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .lc-preset-btn:hover { color: var(--text); border-color: var(--muted); }
+  .lc-preset-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.08); }
+
+  /* Conditional field */
+  .lc-conditional { display: none; }
+  .lc-conditional.show { display: flex; }
+
+  /* Calc button */
+  .btn-calc {
+    width: 100%; background: var(--accent); color: #0a0c0f;
+    border: none; font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 13px; border-radius: 2px; cursor: pointer; margin-top: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-calc:hover { opacity: 0.85; }
+  .btn-calc:active { transform: scale(0.99); }
+
+  /* ── Output ── */
+  .lc-output { display: none; }
+  .lc-output.show { display: block; }
+
+  .lc-result-main {
+    background: var(--bg); border: 1px solid var(--accent);
+    border-radius: 4px; padding: 20px; margin-bottom: 16px;
+    text-align: center;
+  }
+  .lc-lot-value {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 36px; color: var(--accent);
+    letter-spacing: 0.03em; line-height: 1.1;
+  }
+  .lc-lot-label {
+    font-size: 11px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  }
+  .lc-risk-detail {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; color: var(--text-secondary);
+    margin-top: 8px; line-height: 1.6;
+  }
+
+  /* R:R table */
+  .lc-rr-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden; margin-bottom: 16px;
+  }
+  .lc-rr-title {
+    padding: 10px 16px; font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .lc-rr-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px; font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .lc-rr-row:last-child { border-bottom: none; }
+  .lc-rr-row.target {
+    background: rgba(200,169,110,0.08);
+    border-left: 3px solid var(--accent);
+  }
+  .lc-rr-row .rr-label { color: var(--muted); font-size: 12px; width: 40px; }
+  .lc-rr-row .rr-profit { color: var(--green); font-weight: 700; }
+  .lc-rr-row .rr-pips { color: var(--text-secondary); font-size: 12px; }
+  .lc-rr-row .rr-tp { color: var(--muted); font-size: 11px; }
+  .lc-rr-row .rr-target-tag {
+    font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+  }
+
+  /* Entry details */
+  .lc-entry-detail {
+    display: none; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 14px 16px; margin-bottom: 16px;
+    font-family: 'Space Mono', monospace; font-size: 13px;
+    color: var(--text-secondary); line-height: 1.6;
+  }
+  .lc-entry-detail.show { display: block; }
+  .lc-entry-detail .ed-label { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .lc-entry-detail .ed-value { font-weight: 700; }
+
+  /* Warnings */
+  .lc-warnings { margin-bottom: 16px; }
+  .lc-warn-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 12px; margin-bottom: 4px;
+    background: rgba(224,192,92,0.06);
+    border: 1px solid rgba(224,192,92,0.15);
+    border-radius: 3px; font-size: 12px; color: var(--yellow);
+    line-height: 1.4;
+  }
+  .lc-warn-item .warn-icon { flex-shrink: 0; }
+
+  /* ── MT5 Guide ── */
+  .lc-guide {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; margin-bottom: 20px;
+  }
+  .lc-guide-header {
+    padding: 12px 16px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); user-select: none;
+    transition: color 0.15s;
+  }
+  .lc-guide-header:hover { color: var(--text); }
+  .lc-guide-header .toggle-arrow { transition: transform 0.2s; }
+  .lc-guide-header.open .toggle-arrow { transform: rotate(90deg); }
+  .lc-guide-body {
+    display: none; padding: 0 16px 16px;
+    font-size: 13px; color: var(--text-secondary); line-height: 1.7;
+  }
+  .lc-guide-body.open { display: block; }
+  .lc-guide-body h4 {
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; color: var(--accent); margin: 14px 0 8px;
+    text-transform: uppercase;
+  }
+  .lc-guide-body h4:first-child { margin-top: 0; }
+  .lc-guide-body ol { padding-left: 20px; margin: 0; }
+  .lc-guide-body li { margin-bottom: 4px; }
+  .lc-guide-body code {
+    background: var(--bg); padding: 1px 6px; border-radius: 2px;
+    font-family: 'Space Mono', monospace; font-size: 12px;
+  }
+
+  /* ── Prop Firm Mode ── */
+  .lc-prop-toggle {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .lc-switch {
+    position: relative; width: 40px; height: 22px;
+    background: var(--border-bright); border-radius: 11px;
+    cursor: pointer; transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .lc-switch.on { background: var(--accent); }
+  .lc-switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; background: #fff;
+    border-radius: 50%; transition: transform 0.2s;
+  }
+  .lc-switch.on::after { transform: translateX(18px); }
+  .lc-prop-label {
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+
+  .lc-prop-fields { display: none; margin-bottom: 16px; }
+  .lc-prop-fields.show { display: block; }
+  .lc-prop-output { display: none; margin-bottom: 16px; }
+  .lc-prop-output.show { display: block; }
+  .lc-prop-output .prop-stat {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .lc-prop-output .prop-stat:last-child { border-bottom: none; }
+  .lc-prop-output .prop-label { color: var(--muted); }
+  .lc-prop-output .prop-value { font-weight: 700; font-family: 'Space Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="nx-app">
+  <div class="nx-main">
+    <div class="nx-content">
+
+  <div class="nx-page-header">
+    <h1 class="nx-title"><a href="../index.html" style="color:inherit;text-decoration:none">NEXUS</a> · Lot <span class="hl">Calculator</span></h1>
+    <p class="nx-subtitle">Tính toán lot size theo vốn, risk %, và stop loss — hỗ trợ Prop Firm Mode</p>
+  </div>
+
+  <!-- ══ MAIN GRID ═══════════════════════════════════ -->
+  <div class="lc-grid">
+
+    <!-- ── INPUT ── -->
+    <div class="lc-card">
+      <div class="lc-card-label">⊗ Input</div>
+
+      <div class="lc-field">
+        <label>Cặp tiền</label>
+        <select id="lcPair" onchange="onPairChange()">
+          <optgroup label="Nhóm 1 — Quote USD (pip value = $10)">
+            <option value="EUR/USD" data-group="1">EUR/USD</option>
+            <option value="GBP/USD" data-group="1">GBP/USD</option>
+            <option value="AUD/USD" data-group="1">AUD/USD</option>
+            <option value="NZD/USD" data-group="1">NZD/USD</option>
+          </optgroup>
+          <optgroup label="Nhóm 2 — Base USD">
+            <option value="USD/JPY" data-group="2">USD/JPY</option>
+            <option value="USD/CAD" data-group="2">USD/CAD</option>
+            <option value="USD/CHF" data-group="2">USD/CHF</option>
+          </optgroup>
+          <optgroup label="Nhóm 3 — Cross Pairs">
+            <option value="EUR/JPY" data-group="3">EUR/JPY</option>
+            <option value="GBP/JPY" data-group="3">GBP/JPY</option>
+            <option value="EUR/GBP" data-group="3">EUR/GBP</option>
+            <option value="EUR/CHF" data-group="3">EUR/CHF</option>
+            <option value="GBP/CHF" data-group="3">GBP/CHF</option>
+            <option value="AUD/JPY" data-group="3">AUD/JPY</option>
+            <option value="NZD/JPY" data-group="3">NZD/JPY</option>
+            <option value="AUD/CAD" data-group="3">AUD/CAD</option>
+            <option value="AUD/CHF" data-group="3">AUD/CHF</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="lc-field">
+        <label>Tổng vốn ($)</label>
+        <input type="text" id="lcBalance" placeholder="10000" inputmode="decimal">
+      </div>
+
+      <div class="lc-field">
+        <label>Risk %</label>
+        <input type="text" id="lcRisk" placeholder="1" inputmode="decimal">
+        <div class="lc-presets">
+          <button class="lc-preset-btn" onclick="setRisk(0.5)">0.5%</button>
+          <button class="lc-preset-btn active" onclick="setRisk(1)">1%</button>
+          <button class="lc-preset-btn" onclick="setRisk(2)">2%</button>
+        </div>
+      </div>
+
+      <div class="lc-field">
+        <label>Đơn vị nhập (SL & Spread)</label>
+        <div class="lc-presets" style="margin-top:0; margin-bottom:8px">
+          <button class="lc-preset-btn active" id="btnUnitPip" onclick="setUnit('pip')">Pips</button>
+          <button class="lc-preset-btn" id="btnUnitPoint" onclick="setUnit('point')">Points (Pipettes)</button>
+        </div>
+      </div>
+
+      <div class="lc-field">
+        <label id="lblSL">SL (pips)</label>
+        <input type="text" id="lcSL" placeholder="15" inputmode="numeric">
+      </div>
+
+      <div class="lc-field">
+        <label id="lblSpread">Spread (pips)</label>
+        <input type="text" id="lcSpread" placeholder="1.2" inputmode="decimal">
+        <div class="lc-hint" id="hintSpread">Trên MT5: Market Watch → chuột phải → Spread. Chia 10 nếu 5 digits.</div>
+      </div>
+
+      <!-- Pip value (conditional — nhóm 2+3) -->
+      <div class="lc-field lc-conditional" id="lcPipValueField">
+        <label>Pip Value per 1 lot ($)</label>
+        <input type="text" id="lcPipValue" placeholder="6.67" inputmode="decimal">
+        <div class="lc-hint">MT5: chuột phải symbol → Specification → Tick Value</div>
+      </div>
+
+      <div class="lc-field">
+        <label>R:R mong muốn</label>
+        <select id="lcRR">
+          <option value="1">1:1</option>
+          <option value="2" selected>1:2</option>
+          <option value="3">1:3</option>
+          <option value="4">1:4</option>
+          <option value="5">1:5</option>
+        </select>
+      </div>
+
+      <div class="lc-field">
+        <label>Entry Price <span style="color:var(--muted);font-size:11px">(tuỳ chọn)</span></label>
+        <input type="text" id="lcEntry" placeholder="1.08000" inputmode="decimal">
+        <div class="lc-hint">Nhập để tính SL price và TP price cụ thể</div>
+      </div>
+
+      <button class="btn-calc" onclick="calculate()">⊗ Tính Lot Size</button>
+    </div>
+
+    <!-- ── OUTPUT ── -->
+    <div class="lc-card">
+      <div class="lc-card-label">⊕ Kết Quả</div>
+
+      <div class="lc-output" id="lcOutput">
+        <!-- Main result -->
+        <div class="lc-result-main">
+          <div class="lc-lot-label">LOT SIZE</div>
+          <div class="lc-lot-value" id="outLot">—</div>
+          <div class="lc-risk-detail" id="outRiskDetail"></div>
+        </div>
+
+        <!-- R:R Projection -->
+        <div class="lc-rr-card">
+          <div class="lc-rr-title">Projection R:R</div>
+          <div id="outRRList"></div>
+        </div>
+
+        <!-- Entry details -->
+        <div class="lc-entry-detail" id="outEntryDetail"></div>
+
+        <!-- Warnings -->
+        <div class="lc-warnings" id="outWarnings"></div>
+      </div>
+
+      <div id="lcOutputPlaceholder" style="text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;">
+        Nhập thông tin bên trái và bấm <strong>Tính Lot Size</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MT5 GUIDE ═══════════════════════════════════ -->
+  <div class="lc-guide">
+    <div class="lc-guide-header" id="mt5GuideHeader" onclick="toggleGuide()">
+      <span class="toggle-arrow">▸</span> 📖 Hướng Dẫn Lấy Thông Số Trên MT5
+    </div>
+    <div class="lc-guide-body" id="mt5GuideBody">
+      <h4>Cách lấy Spread</h4>
+      <ol>
+        <li>Mở <strong>Market Watch</strong> (<code>Ctrl+M</code>)</li>
+        <li>Chuột phải trong bảng → chọn <strong>Spread</strong> để hiện cột spread</li>
+        <li>Spread hiển thị dạng point — <strong>chia 10</strong> nếu pair 5 digits (VD: <code>12</code> = 1.2 pips)</li>
+        <li>Hoặc: Kéo chart → chuột phải → <strong>Properties</strong> → tick <strong>Show Ask line</strong> → khoảng cách Bid-Ask = spread</li>
+      </ol>
+
+      <h4>Cách lấy Pip Value</h4>
+      <ol>
+        <li>Trong <strong>Market Watch</strong>, chuột phải symbol → chọn <strong>Specification</strong></li>
+        <li>Tìm dòng <strong>Tick Value</strong> = pip value per 1 lot</li>
+        <li>Hoặc: Mở <strong>Order window</strong> (<code>F9</code>) → xem thông tin contract</li>
+        <li>Lưu ý: Với pairs nhóm 1 (EUR/USD, GBP/USD, AUD/USD, NZD/USD) — pip value luôn = <strong>$10/lot</strong>, không cần nhập</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ══ PROP FIRM MODE ══════════════════════════════ -->
+  <div class="lc-card" style="margin-bottom:20px">
+    <div class="lc-prop-toggle">
+      <div class="lc-switch" id="propSwitch" onclick="togglePropMode()"></div>
+      <span class="lc-prop-label">Prop Firm Mode</span>
+    </div>
+
+    <div class="lc-prop-fields" id="propFields">
+      <div class="lc-field">
+        <label>Daily Loss Limit ($)</label>
+        <input type="text" id="propDailyLimit" placeholder="500" inputmode="decimal">
+      </div>
+      <div class="lc-field">
+        <label>Đã loss hôm nay ($)</label>
+        <input type="text" id="propLossToday" placeholder="120" inputmode="decimal">
+      </div>
+    </div>
+
+    <div class="lc-prop-output" id="propOutput">
+      <div class="lc-card-label" style="margin-bottom:12px">⊕ Prop Firm Status</div>
+      <div id="propStats"></div>
+    </div>
+  </div>
+
+  <footer class="nx-footer">
+    Lot Size = Risk Amount ÷ (Total Pips × Pip Value per Lot)<br>
+    NEXUS — ICT Trading Command Center · Lot Calculator v1.0
+  </footer>
+
+    </div>
+  </div>
+</div>
+
+<script src="../shared/utils.js"></script>
+<script src="../shared/store.js"></script>
+<script src="../shared/crypto.js"></script>
+<script src="../shared/sync.js"></script>
+<script src="../shared/nav.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  LOT SIZE CALCULATOR
+// ═══════════════════════════════════════════════════
+
+const LS_KEYS = {
+  BALANCE: 'lc_balance',
+  RISK: 'lc_risk',
+  RR: 'lc_rr',
+  PROP_MODE: 'lc_prop_mode',
+  PROP_LIMIT: 'lc_prop_limit',
+  UNIT: 'lc_unit',
+};
+
+let currentUnit = 'pip';
+
+function setUnit(unit) {
+  currentUnit = unit;
+  document.getElementById('btnUnitPip').classList.toggle('active', unit === 'pip');
+  document.getElementById('btnUnitPoint').classList.toggle('active', unit === 'point');
+  
+  document.getElementById('lblSL').textContent = unit === 'pip' ? 'SL (pips)' : 'SL (points)';
+  document.getElementById('lcSL').placeholder = unit === 'pip' ? '15' : '150';
+  
+  document.getElementById('lblSpread').textContent = unit === 'pip' ? 'Spread (pips)' : 'Spread (points)';
+  document.getElementById('lcSpread').placeholder = unit === 'pip' ? '1.2' : '12';
+  document.getElementById('hintSpread').textContent = unit === 'pip' ? 'Trên MT5: Market Watch → chuột phải → Spread. Chia 10 nếu 5 digits.' : 'Trên MT5: Market Watch → chuột phải → Spread (nhập thẳng giá trị).';
+  
+  localStorage.setItem(LS_KEYS.UNIT, unit);
+  
+  if (document.getElementById('lcOutput').classList.contains('show')) {
+    calculate();
+  }
+}
+
+// ── Init ──
+(function init() {
+  // Restore saved values
+  const savedBalance = localStorage.getItem(LS_KEYS.BALANCE);
+  const savedRisk = localStorage.getItem(LS_KEYS.RISK);
+  const savedRR = localStorage.getItem(LS_KEYS.RR);
+  const savedPropMode = localStorage.getItem(LS_KEYS.PROP_MODE);
+  const savedPropLimit = localStorage.getItem(LS_KEYS.PROP_LIMIT);
+  const savedUnit = localStorage.getItem(LS_KEYS.UNIT);
+
+  if (savedBalance) document.getElementById('lcBalance').value = savedBalance;
+  if (savedRisk) {
+    document.getElementById('lcRisk').value = savedRisk;
+    updatePresetBtns(parseFloat(savedRisk));
+  } else {
+    document.getElementById('lcRisk').value = '1';
+  }
+  if (savedRR) document.getElementById('lcRR').value = savedRR;
+  if (savedPropLimit) document.getElementById('propDailyLimit').value = savedPropLimit;
+  if (savedPropMode === 'true') {
+    togglePropMode();
+  }
+
+  if (savedUnit === 'point') {
+    setUnit('point');
+  } else {
+    setUnit('pip');
+  }
+
+  onPairChange();
+})();
+
+// ── Pair group detection ──
+function getSelectedGroup() {
+  const sel = document.getElementById('lcPair');
+  const opt = sel.options[sel.selectedIndex];
+  return opt ? opt.getAttribute('data-group') : '1';
+}
+
+function isJPYPair() {
+  return document.getElementById('lcPair').value.includes('JPY');
+}
+
+function getPipSize() {
+  return isJPYPair() ? 0.01 : 0.0001;
+}
+
+function onPairChange() {
+  const group = getSelectedGroup();
+  const pipField = document.getElementById('lcPipValueField');
+  if (group === '1') {
+    pipField.classList.remove('show');
+  } else {
+    pipField.classList.add('show');
+  }
+}
+
+// ── Risk presets ──
+function setRisk(val) {
+  document.getElementById('lcRisk').value = val;
+  updatePresetBtns(val);
+}
+
+function updatePresetBtns(val) {
+  document.querySelectorAll('.lc-preset-btn').forEach(btn => {
+    const btnVal = parseFloat(btn.textContent);
+    btn.classList.toggle('active', btnVal === val);
+  });
+}
+
+// ── MT5 Guide toggle ──
+function toggleGuide() {
+  const h = document.getElementById('mt5GuideHeader');
+  const b = document.getElementById('mt5GuideBody');
+  h.classList.toggle('open');
+  b.classList.toggle('open');
+}
+
+// ── Prop Firm toggle ──
+function togglePropMode() {
+  const sw = document.getElementById('propSwitch');
+  const fields = document.getElementById('propFields');
+  const isOn = sw.classList.toggle('on');
+  if (isOn) {
+    fields.classList.add('show');
+  } else {
+    fields.classList.remove('show');
+    document.getElementById('propOutput').classList.remove('show');
+  }
+  localStorage.setItem(LS_KEYS.PROP_MODE, isOn);
+}
+
+// ═══════════════════════════════════════════════════
+//  CALCULATE
+// ═══════════════════════════════════════════════════
+function calculate() {
+  // Parse inputs
+  const balance = parseFloat(document.getElementById('lcBalance').value.replace(/,/g, ''));
+  const riskPct = parseFloat(document.getElementById('lcRisk').value);
+  const slRaw = parseFloat(document.getElementById('lcSL').value);
+  const spreadRaw = parseFloat(document.getElementById('lcSpread').value) || 0;
+  const targetRR = parseInt(document.getElementById('lcRR').value);
+  const entryStr = document.getElementById('lcEntry').value.trim();
+  const entry = entryStr ? parseFloat(entryStr) : null;
+
+  // Pip value
+  const group = getSelectedGroup();
+  let pipValue = 10; // default for group 1
+  if (group !== '1') {
+    pipValue = parseFloat(document.getElementById('lcPipValue').value);
+    if (!pipValue || pipValue <= 0) {
+      document.getElementById('lcPipValue').classList.add('error');
+      showToast('⚠ Cần nhập Pip Value per lot', 'error');
+      return;
+    }
+    document.getElementById('lcPipValue').classList.remove('error');
+  }
+
+  // Validate
+  let hasError = false;
+  if (!balance || balance <= 0) {
+    document.getElementById('lcBalance').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('lcBalance').classList.remove('error');
+  }
+  if (!riskPct || riskPct <= 0) {
+    document.getElementById('lcRisk').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('lcRisk').classList.remove('error');
+  }
+  if (!slRaw || slRaw <= 0) {
+    document.getElementById('lcSL').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('lcSL').classList.remove('error');
+  }
+  if (hasError) {
+    showToast('⚠ Vui lòng nhập đầy đủ thông tin', 'error');
+    return;
+  }
+
+  // Save to localStorage
+  localStorage.setItem(LS_KEYS.BALANCE, document.getElementById('lcBalance').value);
+  localStorage.setItem(LS_KEYS.RISK, document.getElementById('lcRisk').value);
+  localStorage.setItem(LS_KEYS.RR, targetRR);
+  if (document.getElementById('propDailyLimit').value) {
+    localStorage.setItem(LS_KEYS.PROP_LIMIT, document.getElementById('propDailyLimit').value);
+  }
+
+  // ── Core calculation ──
+  const sl = currentUnit === 'point' ? slRaw / 10 : slRaw;
+  const spread = currentUnit === 'point' ? spreadRaw / 10 : spreadRaw;
+  const riskAmount = balance * (riskPct / 100);
+  const totalPips = sl + spread;
+  const lotSize = riskAmount / (totalPips * pipValue);
+  const roundedLot = Math.floor(lotSize * 100) / 100; // round down to 0.01
+  const actualRisk = roundedLot * totalPips * pipValue;
+
+  // ── Display main result ──
+  document.getElementById('lcOutputPlaceholder').style.display = 'none';
+  document.getElementById('lcOutput').classList.add('show');
+
+  document.getElementById('outLot').textContent = roundedLot.toFixed(2);
+  document.getElementById('outRiskDetail').innerHTML =
+    `Risk thực: <strong style="color:var(--accent)">$${actualRisk.toFixed(2)}</strong><br>` +
+    `Pip risk: ${totalPips.toFixed(1)} pips (${sl} SL + ${spread} spread)`;
+
+  // ── R:R Projection ──
+  const rrList = document.getElementById('outRRList');
+  const pipSize = getPipSize();
+  let rrHTML = '';
+  for (let r = 1; r <= 5; r++) {
+    const profit = actualRisk * r;
+    const tpPips = totalPips * r;
+    const isTarget = r === targetRR;
+
+    // TP price (if entry provided)
+    let tpPriceStr = '';
+    if (entry) {
+      // Determine direction: we don't know buy/sell, show both
+      const tpLong = entry + (tpPips * pipSize);
+      const tpShort = entry - (tpPips * pipSize);
+      const decimals = isJPYPair() ? 3 : 5;
+      tpPriceStr = `<span class="rr-tp">${tpLong.toFixed(decimals)} / ${tpShort.toFixed(decimals)}</span>`;
+    }
+
+    rrHTML += `<div class="lc-rr-row${isTarget ? ' target' : ''}">
+      <span class="rr-label">1:${r}</span>
+      <span class="rr-profit">+$${profit.toFixed(2)}</span>
+      <span class="rr-pips">${tpPips.toFixed(1)} pips</span>
+      ${tpPriceStr}
+      ${isTarget ? '<span class="rr-target-tag">← TARGET</span>' : ''}
+    </div>`;
+  }
+  rrList.innerHTML = rrHTML;
+
+  // ── Entry Details ──
+  const entryDetailEl = document.getElementById('outEntryDetail');
+  if (entry) {
+    const decimals = isJPYPair() ? 3 : 5;
+    const slPriceLong = entry - (totalPips * pipSize);
+    const slPriceShort = entry + (totalPips * pipSize);
+    const tpPipsTarget = totalPips * targetRR;
+    const tpPriceLong = entry + (tpPipsTarget * pipSize);
+    const tpPriceShort = entry - (tpPipsTarget * pipSize);
+
+    entryDetailEl.innerHTML = `
+      <div class="ed-label">Entry Details</div>
+      <div style="margin-top:8px">
+        <strong>BUY:</strong> Entry ${entry.toFixed(decimals)} → SL <span class="ed-value" style="color:var(--red)">${slPriceLong.toFixed(decimals)}</span> → TP (1:${targetRR}) <span class="ed-value" style="color:var(--green)">${tpPriceLong.toFixed(decimals)}</span>
+      </div>
+      <div style="margin-top:4px">
+        <strong>SELL:</strong> Entry ${entry.toFixed(decimals)} → SL <span class="ed-value" style="color:var(--red)">${slPriceShort.toFixed(decimals)}</span> → TP (1:${targetRR}) <span class="ed-value" style="color:var(--green)">${tpPriceShort.toFixed(decimals)}</span>
+      </div>
+    `;
+    entryDetailEl.classList.add('show');
+  } else {
+    entryDetailEl.classList.remove('show');
+  }
+
+  // ── Warnings ──
+  const warningsEl = document.getElementById('outWarnings');
+  let warnsHTML = '';
+
+  if (spread / sl > 0.25) {
+    warnsHTML += warnItem('Spread ăn ' + ((spread / sl) * 100).toFixed(0) + '% SL — cân nhắc mở rộng SL hoặc chờ spread thấp hơn');
+  }
+  if (roundedLot < 0.01) {
+    warnsHTML += warnItem('Lot dưới mức tối thiểu (0.01) — tăng vốn hoặc giảm SL');
+  }
+  if (actualRisk < 1) {
+    warnsHTML += warnItem('Risk quá nhỏ ($' + actualRisk.toFixed(2) + ') — không đáng để trade');
+  }
+  if (riskPct > 3) {
+    warnsHTML += warnItem('Risk ' + riskPct + '% vượt ngưỡng an toàn — ICT khuyến nghị ≤ 2%');
+  }
+
+  warningsEl.innerHTML = warnsHTML;
+
+  // ── Prop Firm Mode ──
+  if (document.getElementById('propSwitch').classList.contains('on')) {
+    calcPropFirm(actualRisk);
+  }
+
+  // Scroll to output on mobile
+  if (window.innerWidth < 768) {
+    document.getElementById('lcOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function warnItem(msg) {
+  return `<div class="lc-warn-item"><span class="warn-icon">⚠</span>${msg}</div>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  PROP FIRM
+// ═══════════════════════════════════════════════════
+function calcPropFirm(currentRisk) {
+  const limit = parseFloat(document.getElementById('propDailyLimit').value.replace(/,/g, '')) || 0;
+  const lossToday = parseFloat(document.getElementById('propLossToday').value.replace(/,/g, '')) || 0;
+
+  if (limit <= 0) return;
+
+  const room = limit - lossToday;
+  const pctRoom = (currentRisk / room * 100);
+  const tradesLeft = Math.floor(room / currentRisk);
+  const roomAfterLoss = room - currentRisk;
+
+  const propOutput = document.getElementById('propOutput');
+  propOutput.classList.add('show');
+
+  let statsHTML = '';
+  statsHTML += propStat('Room còn lại', '$' + room.toFixed(2), room < currentRisk ? 'var(--red)' : 'var(--green)');
+  statsHTML += propStat('Lệnh này dùng', '$' + currentRisk.toFixed(2) + ' (' + pctRoom.toFixed(1) + '% room)', pctRoom > 50 ? 'var(--yellow)' : '');
+  statsHTML += propStat('Còn có thể trade', tradesLeft + ' lệnh tương đương', tradesLeft < 2 ? 'var(--yellow)' : '');
+  statsHTML += propStat('Nếu thua lệnh này', 'Còn $' + roomAfterLoss.toFixed(2) + ' room', roomAfterLoss < 0 ? 'var(--red)' : '');
+
+  if (currentRisk > room) {
+    statsHTML += `<div class="lc-warn-item" style="margin-top:8px"><span class="warn-icon">🚫</span>Risk lệnh ($${currentRisk.toFixed(2)}) VƯỢT QUÁ room còn lại ($${room.toFixed(2)}) — KHÔNG NÊN VÀO LỆNH!</div>`;
+  }
+
+  document.getElementById('propStats').innerHTML = statsHTML;
+}
+
+function propStat(label, value, color) {
+  const style = color ? ` style="color:${color}"` : '';
+  return `<div class="prop-stat"><span class="prop-label">${label}</span><span class="prop-value"${style}>${value}</span></div>`;
+}
+</script>
+</body>
+</html>

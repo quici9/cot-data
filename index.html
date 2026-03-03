@@ -110,7 +110,7 @@
       <div class="hub-hero">
         <div class="nx-brand">ICT TRADER TOOLS</div>
         <h1 class="nx-title"><span class="hl">NEXUS</span></h1>
-        <p class="nx-subtitle">ICT Trading Command Center — 5 công cụ phân tích kết nối thành một hệ thống giao dịch hoàn chỉnh.</p>
+        <p class="nx-subtitle">ICT Trading Command Center — 6 công cụ phân tích kết nối thành một hệ thống giao dịch hoàn chỉnh.</p>
       </div>
 
       <!-- Data Status -->
@@ -155,6 +155,13 @@
           <div class="hub-tool-desc">Phân tích Win Rate, RR, Expectancy. Breakdown theo pair, session, setup.</div>
           <span class="hub-tool-tag ready">HOẠT ĐỘNG</span>
         </a>
+
+        <a href="lotcalc/index.html" class="hub-tool-card active">
+          <div class="hub-tool-icon"></div>
+          <div class="hub-tool-title">Lot Size Calculator</div>
+          <div class="hub-tool-desc">Tính lot size theo vốn, risk %, SL. Hỗ trợ R:R projection và Prop Firm Mode.</div>
+          <span class="hub-tool-tag ready">HOẠT ĐỘNG</span>
+        </a>
       </div>
 
       <!-- Footer -->
@@ -174,7 +181,7 @@
 <script src="shared/nav.js"></script>
 <script>
   // Inject icons into tool cards
-  const cardIcons = [SVG_ICONS.barChart, SVG_ICONS.compass, SVG_ICONS.clock, SVG_ICONS.bookOpen, SVG_ICONS.trendingUp];
+  const cardIcons = [SVG_ICONS.barChart, SVG_ICONS.compass, SVG_ICONS.clock, SVG_ICONS.bookOpen, SVG_ICONS.trendingUp, SVG_ICONS.calculator];
   document.querySelectorAll('.hub-tool-icon').forEach((el, i) => {
     if (cardIcons[i]) el.innerHTML = cardIcons[i];
   });

@@ -23,12 +23,13 @@
     { id: 'killzone', label: 'Kill Zone', href: base + 'killzone/index.html', icon: SVG_ICONS.clock },
     { id: 'journal', label: 'Trade Journal', href: base + 'journal/index.html', icon: SVG_ICONS.bookOpen },
     { id: 'performance', label: 'Performance', href: base + 'performance/index.html', icon: SVG_ICONS.trendingUp },
+    { id: 'lotcalc', label: 'Lot Calculator', href: base + 'lotcalc/index.html', icon: SVG_ICONS.calculator },
   ];
 
   // Detect active page
   const path = window.location.pathname;
   function isActive(item) {
-    if (item.id === 'hub') return path.endsWith('/index.html') && !path.includes('/cot/') && !path.includes('/journal/') && !path.includes('/bias/') && !path.includes('/killzone/') && !path.includes('/performance/') && !path.includes('/settings/');
+    if (item.id === 'hub') return path.endsWith('/index.html') && !path.includes('/cot/') && !path.includes('/journal/') && !path.includes('/bias/') && !path.includes('/killzone/') && !path.includes('/performance/') && !path.includes('/settings/') && !path.includes('/lotcalc/');
     return path.includes('/' + item.id + '/');
   }
 
