@@ -326,9 +326,15 @@
 
       <!-- Pip value (conditional — nhóm 2+3) -->
       <div class="lc-field lc-conditional" id="lcPipValueField">
-        <label>Pip Value per 1 lot ($)</label>
-        <input type="text" id="lcPipValue" placeholder="6.67" inputmode="decimal">
-        <div class="lc-hint">MT5: chuột phải symbol → Specification → Tick Value</div>
+        <label style="display:flex;align-items:center;gap:6px">
+          Pip Value per 1 lot ($)
+          <span id="lcPipValueStatus" style="font-size:10px;color:var(--muted);font-weight:400;letter-spacing:0"></span>
+        </label>
+        <div style="position:relative">
+          <input type="text" id="lcPipValue" placeholder="6.67" inputmode="decimal">
+          <button id="btnRefreshRate" onclick="refreshPipValue()" title="Cập nhật tỷ giá" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;font-size:14px;transition:color 0.15s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">↻</button>
+        </div>
+        <div class="lc-hint" id="hintPipValue">Tự động tính từ tỷ giá ECB — bạn có thể sửa thủ công nếu cần</div>
       </div>
 
       <div class="lc-field">
@@ -398,10 +404,10 @@
 
       <h4>Cách lấy Pip Value</h4>
       <ol>
-        <li>Trong <strong>Market Watch</strong>, chuột phải symbol → chọn <strong>Specification</strong></li>
-        <li>Tìm dòng <strong>Tick Value</strong> = pip value per 1 lot</li>
-        <li>Hoặc: Mở <strong>Order window</strong> (<code>F9</code>) → xem thông tin contract</li>
-        <li>Lưu ý: Với pairs nhóm 1 (EUR/USD, GBP/USD, AUD/USD, NZD/USD) — pip value luôn = <strong>$10/lot</strong>, không cần nhập</li>
+        <li><strong>Tự động:</strong> Calculator sẽ tự tính pip value từ tỷ giá ECB (cập nhật hàng ngày). Bạn có thể nhấn <code>↻</code> để cập nhật lại.</li>
+        <li><strong>Thủ công (MT5):</strong> Nếu broker hiển thị <strong>Tick Value</strong> trong Specification → dùng giá trị đó. Lưu ý nhân 10 nếu broker hiển thị tick value (point) thay vì pip value.</li>
+        <li>Với pairs nhóm 1 (EUR/USD, GBP/USD, AUD/USD, NZD/USD) — pip value luôn = <strong>$10/lot</strong>, không cần nhập.</li>
+        <li>Sai số nhỏ giữa tỷ giá ECB và tỷ giá broker là bình thường và không ảnh hưởng đáng kể đến lot size.</li>
       </ol>
     </div>
   </div>
@@ -459,6 +465,148 @@ const LS_KEYS = {
 };
 
 let currentUnit = 'pip';
+
+// ── Exchange rate cache ──
+const RATE_CACHE_KEY = 'lc_rate_cache';
+const RATE_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+let cachedRates = null;
+let isAutoFilled = false;
+
+function getCachedRates() {
+  if (cachedRates) return cachedRates;
+  try {
+    const raw = localStorage.getItem(RATE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.timestamp > RATE_CACHE_TTL_MS) {
+      localStorage.removeItem(RATE_CACHE_KEY);
+      return null;
+    }
+    cachedRates = parsed;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedRates(rates, dateStr) {
+  const data = { rates, date: dateStr, timestamp: Date.now() };
+  cachedRates = data;
+  localStorage.setItem(RATE_CACHE_KEY, JSON.stringify(data));
+}
+
+async function fetchExchangeRates() {
+  const cached = getCachedRates();
+  if (cached) return cached;
+
+  try {
+    const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=JPY,CAD,CHF,GBP');
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    saveCachedRates(data.rates, data.date);
+    return { rates: data.rates, date: data.date, timestamp: Date.now() };
+  } catch (err) {
+    console.warn('Failed to fetch exchange rates:', err);
+    return null;
+  }
+}
+
+function getQuoteCurrency(pair) {
+  return pair.split('/')[1];
+}
+
+function calculatePipValueFromRates(pair, rates) {
+  const quote = getQuoteCurrency(pair);
+  if (quote === 'USD') return 10;
+
+  // For JPY pairs: pip = 0.01, contract = 100,000 → 1 pip = 1,000 JPY
+  // Pip value in USD = 1,000 / USD_JPY
+  if (quote === 'JPY') {
+    return rates.JPY ? (1000 / rates.JPY) : null;
+  }
+  // For CAD pairs: pip = 0.0001, contract = 100,000 → 1 pip = 10 CAD
+  // Pip value in USD = 10 / USD_CAD
+  if (quote === 'CAD') {
+    return rates.CAD ? (10 / rates.CAD) : null;
+  }
+  // For CHF pairs: pip = 0.0001, contract = 100,000 → 1 pip = 10 CHF
+  // Pip value in USD = 10 / USD_CHF
+  if (quote === 'CHF') {
+    return rates.CHF ? (10 / rates.CHF) : null;
+  }
+  // For GBP pairs: pip = 0.0001, contract = 100,000 → 1 pip = 10 GBP
+  // Pip value in USD = 10 × GBP_USD = 10 / (USD_GBP)
+  // API gives USD→GBP rate, so GBP_USD = 1 / (USD_GBP)
+  if (quote === 'GBP') {
+    return rates.GBP ? (10 / rates.GBP) : null;
+  }
+  return null;
+}
+
+function updatePipValueStatus(text, isLoading) {
+  const statusEl = document.getElementById('lcPipValueStatus');
+  if (!statusEl) return;
+  if (isLoading) {
+    statusEl.textContent = '⏳ đang lấy tỷ giá...';
+    statusEl.style.color = 'var(--muted)';
+  } else {
+    statusEl.textContent = text;
+    statusEl.style.color = text.includes('⚠') ? 'var(--yellow)' : 'var(--muted)';
+  }
+}
+
+async function autoFillPipValue() {
+  const pair = document.getElementById('lcPair').value;
+  const group = getSelectedGroup();
+  if (group === '1') return;
+
+  updatePipValueStatus('', true);
+
+  const rateData = await fetchExchangeRates();
+  if (!rateData || !rateData.rates) {
+    updatePipValueStatus('⚠ Không lấy được tỷ giá — nhập thủ công', false);
+    return;
+  }
+
+  const pipVal = calculatePipValueFromRates(pair, rateData.rates);
+  if (pipVal === null) {
+    updatePipValueStatus('⚠ Không hỗ trợ — nhập thủ công', false);
+    return;
+  }
+
+  const rounded = Math.round(pipVal * 100) / 100;
+  document.getElementById('lcPipValue').value = rounded.toFixed(2);
+  isAutoFilled = true;
+
+  const dateStr = rateData.date || 'N/A';
+  updatePipValueStatus(`✓ ECB ${dateStr}`, false);
+
+  const hintEl = document.getElementById('hintPipValue');
+  if (hintEl) {
+    const quote = getQuoteCurrency(pair);
+    hintEl.textContent = `Tự động: USD/${quote} = ${rateData.rates[quote]} → Pip Value = $${rounded.toFixed(2)}/lot — sửa thủ công nếu cần`;
+  }
+}
+
+function refreshPipValue() {
+  // Clear cache to force re-fetch
+  localStorage.removeItem(RATE_CACHE_KEY);
+  cachedRates = null;
+  autoFillPipValue();
+}
+
+// Listen for manual edit — stop auto-overwriting
+document.addEventListener('DOMContentLoaded', () => {
+  const pipInput = document.getElementById('lcPipValue');
+  if (pipInput) {
+    pipInput.addEventListener('input', () => {
+      isAutoFilled = false;
+      updatePipValueStatus('✎ thủ công', false);
+      const hintEl = document.getElementById('hintPipValue');
+      if (hintEl) hintEl.textContent = 'Đang dùng giá trị thủ công — bấm ↻ để lấy lại tỷ giá tự động';
+    });
+  }
+});
 
 function setUnit(unit) {
   currentUnit = unit;
@@ -533,6 +681,7 @@ function onPairChange() {
     pipField.classList.remove('show');
   } else {
     pipField.classList.add('show');
+    autoFillPipValue();
   }
 }
 
